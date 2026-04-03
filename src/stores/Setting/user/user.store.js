@@ -1,11 +1,11 @@
 import { UserService } from "../../../ApiService/index.service";
 import { defineStore } from "pinia";
-import { useToast } from "../../UI/utils/useToast"; // To'g'ri yo'l ekanligini tekshiring
-import { Loading } from "../../utils/Loading.js";
+import { useToast } from "../../../UI/utils/useToast"; // To'g'ri yo'l ekanligini tekshiring
+import { Loading } from "../../../utils/Loading.js";
 import { jwtDecode } from "jwt-decode"; // O'rnatish shart: npm install jwt-decode
 const loading = Loading();
 const { toast } = useToast();
-export const AuthStore = defineStore("AuthStore", {
+export const UserStore = defineStore("UserStore", {
   state: () => {
 
     return {
