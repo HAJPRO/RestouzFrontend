@@ -199,7 +199,7 @@ const menuItems = [
 ];
 
 const staffSubs = [
-  { label: "Foydalanuvchilar", routeName: "home", icon: personOutline },
+  { label: "Foydalanuvchilar", routeName: "settingsusers", icon: personOutline },
   { label: "Rollar", routeName: "home", icon: ribbonOutline },
   { label: "Ruxsatlar", routeName: "home", icon: shieldCheckmarkOutline },
   { label: "Chek sozlamalari", routeName: "check", icon: printOutline },

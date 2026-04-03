@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useLanguage } from '../Language/composables/useLanguage' // O'zingiz yaratgan composable
-import EmptyState from '../components/Helpers/empty/EmptyState.vue'
+import {EmptyState} from '../UI/UI'
 
 // 1. Global tildan foydalanish
 const { t } = useLanguage() 
