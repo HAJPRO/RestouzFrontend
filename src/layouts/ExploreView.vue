@@ -4,7 +4,7 @@
   <ion-page id="main-content">
     <!-- <Header /> -->
 
-    <ion-content class="bg-white dark:bg-slate-900">
+    <ion-content class="bg-white dark:bg-slate-900" :scroll-y="true">
       <ion-refresher slot="fixed" @ionRefresh="handleGlobalRefresh($event)">
         <ion-refresher-content
           pulling-text="Yangilash uchun pastga torting"
@@ -43,3 +43,29 @@ const handleGlobalRefresh = async (event) => {
   }
 };
 </script>
+<style >
+/* 1. Chrome, Safari va Capacitor WebView uchun */
+ion-content::part(scroll)::-webkit-scrollbar {
+  width: 1px !important;    /* Vertikal chiziq qalinligi */
+  height: 1px !important;   /* Gorizontal chiziq balandligi */
+}
+
+ion-content::part(scroll)::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+ion-content::part(scroll)::-webkit-scrollbar-thumb {
+  background: #e5e4eb !important; /* Light mode */
+}
+
+/* Dark mode uchun */
+.dark ion-content::part(scroll)::-webkit-scrollbar-thumb {
+  background: #0a61da !important; /* Dark mode */
+}
+
+/* 2. Firefox uchun */
+ion-content::part(scroll) {
+  scrollbar-width: thin !important;
+  scrollbar-color: #4d69d8 transparent !important;
+}
+</style>
