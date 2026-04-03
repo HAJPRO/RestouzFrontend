@@ -1,0 +1,100 @@
+import { AuthService } from "../../ApiService/index.service";
+import { defineStore } from "pinia";
+import { useToast } from "../../UI/utils/useToast"; // To'g'ri yo'l ekanligini tekshiring
+import { Loading } from "../../utils/Loading.js";
+import { jwtDecode } from "jwt-decode"; // O'rnatish shart: npm install jwt-decode
+const loading = Loading();
+const { toast } = useToast();
+export const AuthStore = defineStore("AuthStore", {
+    state: () => {
+        // Sahifa yangilanganda ham foydalanuvchi ma'lumotlarini saqlab qolamiz
+        const token = localStorage.getItem("token");
+
+        return {
+            user: token ? jwtDecode(token) : null, // Guard aynan shu 'user'ni qidiradi
+            items: "",
+            is_alert: false
+        }
+    },
+    actions: {
+        // async register(payload) {
+        //     try {
+        //         const loader = loading.show();
+        //         const res = await RegisterService.Register(payload);
+        //         loader.hide();
+        //         ToastifyService.ToastSuccess({ msg: res.data.msg });
+        //     } catch (err) {
+        //         console.error("Register xatosi:", err);
+        //     }
+        // },
+
+        // AuthStore.js actions qismi
+        /**
+         * Tizimga kirish action-i
+         * @param {Object} payload - {username, password, server}
+         */
+        async login(payload) {
+            try {
+                const res = await AuthService.Login(payload);
+
+                // 1. API javobini tekshirish (Backend standardiga mos holda)
+                if (res.data?.success && res.data?.data?.accessToken) {
+                    const token = res.data.data.accessToken;
+                    const userData = res.data.data.user;
+
+                    // 2. Ma'lumotlarni saqlash
+                    localStorage.setItem("token", token);
+
+                    // Agar jwtDecode ishlatilsa, tokendan foydalanuvchi ma'lumotlarini olamiz
+                    // Lekin backend user ob'ektini qaytarsa, undan foydalanish aniqroq (roles, permissions)
+                    this.user = userData || jwtDecode(token);
+                    this.isAuthenticated = true;
+
+                    // 3. Muvaffaqiyatli xabar
+                    toast.success(res.data.message || "Tizimga muvaffaqiyatli kirdingiz!");
+
+                    return true;
+                }
+
+                return false;
+
+            } catch (err) {
+                // 4. Xatoliklarni tahlil qilish va foydalanuvchiga ko'rsatish
+                console.error("[Login Action Error]:", err);
+                const errorMessage = err.response?.data?.message
+                    || "Server bilan bog'lanishda xatolik yuz berdi";
+
+                toast.error(errorMessage);
+
+                // Login muvaffaqiyatsiz bo'lsa state'larni tozalash
+                this.user = null;
+                this.isAuthenticated = false;
+
+                return false;
+            }
+        },
+        // async update(payload) {
+        //     try {
+        //         const loader = loading.show();
+        //         const res = await RegisterService.Update(payload);
+        //         loader.hide();
+        //         ToastifyService.ToastSuccess({ msg: res.data.msg });
+        //     } catch (err) {
+        //         console.error("Update xatosi:", err);
+        //     }
+        // },
+
+        logout() {
+            console.log("Logout boshlandi...");
+
+            // Avval o'chirishni bajaramiz
+            localStorage.removeItem("token");
+            localStorage.removeItem("account");
+
+            console.log("LocalStorage tozalandi. Token hozir:", localStorage.getItem("token"));
+
+            this.user = null;
+            window.location.href = "/login";
+        }
+    },
+});

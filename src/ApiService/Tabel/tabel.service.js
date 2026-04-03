@@ -1,10 +1,11 @@
 import api from "../../helpers/api";
 
-export const TabelService = {
-
+const TabelService = {
     Create(state) {
-        let url = "tabel/create";
+        const url = "tabel/create";
         return api.post(url, state);
     },
-   
 };
+
+// MANA SHU QATORNI QO'SHING
+export default TabelService;

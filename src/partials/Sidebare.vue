@@ -3,18 +3,18 @@
     <ion-content class="ion-no-padding" :scroll-y="false">
       <div class="flex flex-col h-full bg-white dark:bg-[#020617] transition-colors duration-500">
         
-        <header class="p-6 pb-2">
+        <header class="p-6 pb-1">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
                 <ion-icon :icon="restaurant" class="text-white text-xl" />
               </div>
-              <h1 class="text-xl font-black tracking-tighter dark:text-white">
+              <h1 class="text-xl font-black tracking-tighter dark:text-white mt-3">
                 Resto<span class="text-indigo-600 italic">.uz</span>
               </h1>
             </div>
             <ion-menu-toggle>
-              <button class="p-2 rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-400">
+              <button class="">
                 <ion-icon :icon="chevronBackOutline" />
               </button>
             </ion-menu-toggle>

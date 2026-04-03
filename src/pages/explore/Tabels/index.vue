@@ -1,5 +1,6 @@
 <template>
   <ion-page class="bg-slate-50 dark:bg-slate-950">
+  <Modal/>
   <ion-header class="ion-no-border">
   <div class="bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl pt-safe border-b border-slate-100 dark:border-white/5">
     
@@ -19,8 +20,8 @@
       <button class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 text-slate-500 flex items-center justify-center active:scale-95 transition-all">
         <ion-icon :icon="searchOutline" class="text-base" />
       </button>
-      <button @click="store.Create()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 text-slate-500 flex items-center justify-center active:scale-95 transition-all">
-  <ion-icon :icon="pulseOutline" class="text-base" />
+      <button @click="store.ModalAction()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 text-slate-500 flex items-center justify-center active:scale-95 transition-all">
+  <ion-icon :icon="addOutline" class="text-base" />
 </button>
       </div>
     </div>
@@ -102,9 +103,11 @@ import {
   personOutline, 
   timeOutline, chevronForwardCircleOutline,searchOutline,arrowBackOutline,
   pulseOutline,
+  addOutline,
   
 } from 'ionicons/icons';
 import Footer from '../../../partials/Footer.vue';
+import Modal from '../../../components/Tabel/ActionModal.vue';
 import { storeToRefs } from 'pinia';
 const store = TabelStore();
 const {} = storeToRefs(store)

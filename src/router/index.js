@@ -8,7 +8,7 @@ const routes = [
     component: LandingView,
     children: [
       { path: '', redirect: '/landing/login' }, // Redirect qo'shildi
-      { path: 'login', name: 'login', component: () => import('../layouts/ExploreView.vue') },
+      { path: 'login', name: 'login', component: () => import('../pages/landing/login.vue') },
     ]
   },
   {
