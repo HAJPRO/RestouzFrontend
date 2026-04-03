@@ -59,7 +59,7 @@ export const AuthStore = defineStore("AuthStore", {
                 return false;
 
             } catch (err) {
-                // 4. Xatoliklarni tahlil qilish va foydalanuvchiga ko'rsatish.
+                // 4. Xatoliklarni tahlil qilish va foydalanuvchiga ko'rsatish
                 console.error("[Login Action Error]:", err);
                 const errorMessage = err.response?.data?.message
                     || "Server bilan bog'lanishda xatolik yuz berdi";
