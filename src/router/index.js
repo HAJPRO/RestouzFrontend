@@ -25,6 +25,8 @@ const routes = [
 
       // Settings bo'limi
       { path: 'settings/users', name: 'settingsusers', component: () => import('../pages/explore/Settings/users/index.vue') },
+      { path: 'settings/roles', name: 'settingsroles', component: () => import('../pages/explore/Settings/role/index.vue') },
+      { path: 'settings/permissions', name: 'settingspermissions', component: () => import('../pages/explore/Settings/permission/index.vue') },
     ]
   },
   // Noma'lum yo'llar uchun default login'ga yuborish

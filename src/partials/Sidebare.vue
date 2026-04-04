@@ -200,8 +200,8 @@ const menuItems = [
 
 const staffSubs = [
   { label: "Foydalanuvchilar", routeName: "settingsusers", icon: personOutline },
-  { label: "Rollar", routeName: "home", icon: ribbonOutline },
-  { label: "Ruxsatlar", routeName: "home", icon: shieldCheckmarkOutline },
+  { label: "Rollar", routeName: "settingsroles", icon: ribbonOutline },
+  { label: "Ruxsatlar", routeName: "settingspermissions", icon: shieldCheckmarkOutline },
   { label: "Chek sozlamalari", routeName: "check", icon: printOutline },
 
 ];
