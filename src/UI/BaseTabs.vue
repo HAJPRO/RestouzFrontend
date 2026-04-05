@@ -1,147 +1,136 @@
 <template>
-  <div class="w-full bg-transparent transition-colors duration-300">
+  <div class="inline-block select-none">
+    <Button 
+      icon="fas fa-filter"
+      size="sm"
+      @click="openDrawer"
     
-    <div v-if="!isMobile" class="w-full">
-      <div class="flex items-center gap-4 border-b border-slate-200 dark:border-slate-700 px-1 relative">
-        <button
-          v-for="tab in props.tabs"
-          :key="tab.id"
-          @click="handleTabClick(tab.id)"
-          class="group relative flex items-center gap-2 py-3 px-1 text-[13px] font-medium transition-all duration-300 outline-none"
-          :class="[modelValue === tab.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800']"
-        >
-          <i v-if="tab.icon" :class="[tab.icon, modelValue === tab.id ? 'scale-110' : 'opacity-70']"></i>
-          <span>{{ tab.label }}</span>
-          <span v-if="counts[tab.key]" class="ml-1 text-[10px] opacity-60">({{ counts[tab.key] }})</span>
+    >
+      <span 
+        v-if="isSelected && !isOpen" 
+        class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse"
+      ></span>
+    </Button>
+
+    <Teleport to="body">
+      <transition name="drawer-fade">
+        <div v-if="isOpen" class="fixed inset-0 z-[10000] flex items-end justify-center">
           
-          <span 
-            class="absolute bottom-0 left-0 w-full h-[2px] bg-indigo-600 transition-all duration-300"
-            :class="modelValue === tab.id ? 'scale-x-100' : 'scale-x-0'"
-          ></span>
-        </button>
-      </div>
-    </div>
-
-    <div v-else class="px-2 mobile-dropdown-container">
-      <button 
-        @click.stop="isDropdownOpen = !isDropdownOpen"
-        class="w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl px-4 py-3 shadow-sm active:scale-[0.98] transition-all"
-        :class="{'ring-2 ring-indigo-500/20 border-indigo-500/50': isDropdownOpen}"
-      >
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600">
-            <i :class="currentTab?.icon || 'fa-solid fa-grid-2'"></i>
-          </div>
-          <div class="text-left">
-            <span class="block text-[10px] text-slate-400 uppercase font-black tracking-widest">Bo'lim</span>
-            <span class="block text-sm font-bold text-slate-700 dark:text-slate-200">{{ currentTab?.label }}</span>
-          </div>
-        </div>
-        
-        <div class="flex items-center gap-3">
-          <span v-if="counts[currentTab?.key]" class="bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] font-black px-2 py-1 rounded-lg">
-            {{ counts[currentTab?.key] }}
-          </span>
-          <ion-icon :icon="chevronDownOutline" class="text-slate-400 transition-transform duration-300" :class="{'rotate-180': isDropdownOpen}" />
-        </div>
-      </button>
-
-      <transition name="dropdown-slide">
-        <div v-if="isDropdownOpen" class="absolute top-full left-2 right-2 mt-2 bg-white dark:bg-slate-900 rounded-[24px] shadow-2xl border border-slate-100 dark:border-white/5 z-[100] overflow-hidden flex flex-col max-h-[60vh]">
+          <div 
+            class="absolute inset-0 bg-slate-900/60 backdrop-blur-[4px] transition-opacity" 
+            @click="closeDrawer"
+          ></div>
           
-          <div class="p-3 border-b border-slate-50 dark:border-white/5">
-            <div class="relative">
-              <ion-icon :icon="searchOutline" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input 
-                v-model="search" 
-                type="text" 
-                :placeholder="searchPlaceholder"
-                class="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium outline-none focus:ring-1 ring-indigo-500/30"
-              />
-            </div>
-          </div>
-
-          <div class="overflow-y-auto p-2 space-y-1 custom-scrollbar">
-            <button 
-              v-for="tab in filteredTabs" 
-              :key="tab.id"
-              @click="selectTabMobile(tab.id)"
-              class="w-full flex items-center justify-between p-3 rounded-xl transition-all"
-              :class="modelValue === tab.id ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600' : 'text-slate-600 dark:text-slate-400 active:bg-slate-50'"
+          <transition name="drawer-slide">
+            <div 
+              v-if="isOpen"
+              class="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[85vh]"
             >
-              <div class="flex items-center gap-3">
-                <i :class="[tab.icon, 'w-5 text-center text-base', modelValue === tab.id ? 'text-indigo-600' : 'text-slate-400']"></i>
-                <span class="text-sm font-bold">{{ tab.label }}</span>
+              <div class="w-full flex justify-center py-4 cursor-pointer" @click="closeDrawer">
+                <div class="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full transition-colors active:bg-slate-300"></div>
               </div>
-              <div class="flex items-center gap-2">
-                <span v-if="counts[tab.key]" class="text-[10px] font-bold opacity-60">{{ counts[tab.key] }}</span>
-                <ion-icon v-if="modelValue === tab.id" :icon="checkmarkCircleOutline" class="text-lg" />
+
+              <div class="px-6 mb-4 flex justify-between items-center">
+                <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Bo'limni tanlang</h4>
+                <button @click="closeDrawer" class="text-slate-300 active:text-rose-500 transition-colors">
+                  <i class="fas fa-times-circle text-xl"></i>
+                </button>
               </div>
-            </button>
-          </div>
+
+              <div class="flex-1 overflow-y-auto px-4 pb-12 custom-scrollbar">
+                <div class="flex flex-col gap-2">
+                  <button
+                    v-for="tab in tabs"
+                    :key="tab.id"
+                    @click="selectTab(tab.id)"
+                    class="flex items-center justify-between p-4 rounded-[24px] transition-all duration-200 active:scale-[0.96]"
+                    :class="modelValue === tab.id 
+                      ? 'bg-indigo-50 dark:bg-indigo-500/10 border-2 border-indigo-500/20 shadow-sm' 
+                      : 'bg-slate-50/50 dark:bg-slate-800/30 border-2 border-transparent'"
+                  >
+                    <div class="flex items-center gap-4">
+                      <div 
+                        class="w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-500"
+                        :class="modelValue === tab.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100 rotate-6' : 'bg-white dark:bg-slate-800 text-slate-400'"
+                      >
+                        <i :class="tab.icon || 'fas fa-layer-group'" class="text-base"></i>
+                      </div>
+                      <span class="font-black text-[15px]" :class="modelValue === tab.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-300'">
+                        {{ tab.label }}
+                      </span>
+                    </div>
+                    <i v-if="modelValue === tab.id" class="fas fa-check text-indigo-600"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </transition>
+
         </div>
       </transition>
-
-      <transition name="fade">
-        <div v-if="isDropdownOpen" class="fixed inset-0 bg-slate-950/20 backdrop-blur-[2px] z-[90]" @click="isDropdownOpen = false"></div>
-      </transition>
-    </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import { useScreen } from "@/utils/TableOptions/useTableOptions";
-import { chevronDownOutline, searchOutline, checkmarkCircleOutline } from 'ionicons/icons';
+import { ref, computed, onUnmounted } from 'vue';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Button } from '../UI/UI';
 
 const props = defineProps({
   tabs: { type: Array, required: true },
-  modelValue: { type: [Number, String], required: true },
-  counts: { type: Object, default: () => ({}) },
-  searchPlaceholder: { type: String, default: "Qidirish..." }
+  modelValue: { type: [String, Number], required: true }
 });
 
 const emit = defineEmits(['update:modelValue', 'change']);
-const { isMobile } = useScreen();
-const search = ref("");
-const isDropdownOpen = ref(false);
+const isOpen = ref(false);
 
-const handleTabClick = (id) => {
+const isSelected = computed(() => props.modelValue !== props.tabs[0]?.id);
+
+const openDrawer = async () => {
+  isOpen.value = true;
+  document.body.style.overflow = 'hidden';
+  try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch (e) {}
+};
+
+const closeDrawer = () => {
+  isOpen.value = false;
+  document.body.style.overflow = '';
+};
+
+const selectTab = async (id) => {
   if (props.modelValue !== id) {
     emit('update:modelValue', id);
     emit('change', id);
+    try { await Haptics.impact({ style: ImpactStyle.Light }); } catch (e) {}
   }
+  setTimeout(closeDrawer, 150);
 };
 
-const selectTabMobile = (id) => {
-  handleTabClick(id);
-  isDropdownOpen.value = false;
-  search.value = "";
-};
-
-const currentTab = computed(() => 
-  props.tabs.find(t => t.id === props.modelValue) || props.tabs[0]
-);
-
-const filteredTabs = computed(() =>
-  props.tabs.filter((t) =>
-    t.label.toLowerCase().includes(search.value.toLowerCase())
-  )
-);
+onUnmounted(() => {
+  document.body.style.overflow = '';
+});
 </script>
 
 <style scoped>
-.dropdown-slide-enter-active, .dropdown-slide-leave-active {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+/* Orqa fon animatsiyasi */
+.drawer-fade-enter-active, .drawer-fade-leave-active {
+  transition: opacity 0.3s ease;
 }
-.dropdown-slide-enter-from, .dropdown-slide-leave-to {
+.drawer-fade-enter-from, .drawer-fade-leave-to {
   opacity: 0;
-  transform: translateY(-12px) scale(0.98);
 }
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+/* Pastdan chiquvchi drawer animatsiyasi */
+.drawer-slide-enter-active {
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.drawer-slide-leave-active {
+  transition: transform 0.3s ease-in;
+}
+.drawer-slide-enter-from, .drawer-slide-leave-to {
+  transform: translateY(100%);
+}
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar { display: none; }
 </style>

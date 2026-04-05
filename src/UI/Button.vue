@@ -121,19 +121,18 @@ const buttonClasses = computed(() => {
 
     <template v-else>
       <i 
-        v-if="(icon || leftIcon) && !hasSlot" 
-        :class="[icon || leftIcon, 'text-[1.2em] transition-transform group-hover:scale-110']"
+        v-if="icon || leftIcon" 
+        :class="[icon || leftIcon, 'text-[1.2em] transition-transform group-hover:scale-110', { 'mr-2': hasSlot && leftIcon }]"
       ></i>
+      
+      <span v-if="hasSlot" class="relative">
+        <slot />
+      </span>
 
-      <template v-else>
-        <i v-if="leftIcon" :class="[leftIcon, 'text-[1.1em] transition-transform group-hover:-translate-x-0.5']"></i>
-        
-        <span v-if="hasSlot" :class="{ 'opacity-100': !loading, 'opacity-80': loading }">
-          <slot />
-        </span>
-
-        <i v-if="rightIcon" :class="[rightIcon, 'text-[1.1em] transition-transform group-hover:translate-x-0.5']"></i>
-      </template>
+      <i 
+        v-if="rightIcon" 
+        :class="[rightIcon, 'text-[1.1em] transition-transform group-hover:translate-x-0.5 ml-2']"
+      ></i>
     </template>
   </component>
 </template>

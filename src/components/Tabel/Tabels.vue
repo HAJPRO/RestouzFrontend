@@ -1,59 +1,27 @@
 <template>
   <ion-page class="bg-slate-50 dark:bg-slate-950">
     <Modal />
-
-    <ion-header class="ion-no-border">
-      <div class="relative bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-100 dark:border-white/5 pt-safe overflow-hidden">
-        
-        <transition name="slide-fade">
-          <div v-if="!isSearchActive" class="px-4 h-14 mt-10 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <Button @click="$router.back()" icon="fas fa-arrow-left" size="sm"  />
-              <div class="mt-2">
-                <h1 class="text-xl font-black text-slate-900 dark:text-white tracking-tighter leading-none mt-1">Stollar</h1>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <Button @click="toggleSearch" icon="fas fa-search" size="sm" />
-              <Button @click="isCategoryModalOpen = true" icon="fas fa-filter" size="sm" />
-              <Button @click="store.ModalAction()" icon="fas fa-plus" size="sm" class="!bg-indigo-600 !text-white shadow-lg shadow-indigo-500/20" />
-            </div>
-          </div>
-        </transition>
-
-        <transition name="search-slide">
-          <div v-if="isSearchActive" class="px-4 h-14 mt-10 flex items-center gap-2 bg-white dark:bg-slate-950 shadow-sm">
-            <div class="flex-1">
-              <Input 
-                v-model="searchQuery"
-                size="small" 
-                clearable 
-                iconPre="fas fa-search" 
-                placeholder="Stol raqami yoki sig'imi..." 
-                autofocus
+   <Header 
+    title="Stollar" 
+    searchable 
+    v-model="searchQuery"
+    searchPlaceholder="Taom izlash..."
+  >
+    <template #actions>
+              <BaseTabs 
+                v-model="activeStatus" 
+                :tabs="statusFilters"
+                @change="onCategoryChange"
               />
-            </div>
-            <Button @click="toggleSearch" size="sm" icon="fas fa-xmark" class="mt-[-20px]"/>
-          </div>
-        </transition>
 
-        <div v-if="!isSearchActive" class="px-4 py-3 flex gap-2 overflow-x-auto no-scrollbar border-t border-slate-50 dark:border-white/5">
-          <button 
-            v-for="filter in statusFilters" :key="filter.id"
-            @click="activeStatus = filter.id"
-            :class="[
-              'px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all whitespace-nowrap',
-              activeStatus === filter.id 
-                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-md' 
-                : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-500'
-            ]"
-          >
-            {{ filter.name }} ({{ getCount(filter.id) }})
-          </button>
-        </div>
-      </div>
-    </ion-header>
+              <Button 
+                @click="store.ModalAction()" 
+                icon="fas fa-plus" 
+                size="sm" 
+                class="!bg-indigo-600 !text-white shadow-lg shadow-indigo-500/20" 
+              />
+    </template>
+  </Header>
 
     <ion-content :fullscreen="true">
       <div class="max-w-full mx-auto px-5 py-6 pb-32">
@@ -63,11 +31,11 @@
             v-for="table in filteredTables" :key="table.id"
             @click="handleTableClick(table)"
             :class="[
-              'group relative bg-white dark:bg-slate-900 rounded-[35px] p-5 border transition-all duration-500 overflow-hidden active:scale-95 shadow-sm',
+              'group relative bg-white dark:bg-slate-900 rounded-[35px] p-5 border transition-all duration-500 active:scale-95 shadow-sm overflow-hidden',
               table.status === 'available' ? 'border-slate-100 dark:border-white/5' : 'border-indigo-500/20 ring-1 ring-indigo-500/5'
             ]"
           >
-            <div :class="['absolute top-0 left-0 w-full h-1.5 transition-colors duration-500', getStatusColor(table.status)]"></div>
+            <div :class="['absolute top-0 left-0 w-full h-1.5', getStatusLineColor(table.status)]"></div>
 
             <div class="flex justify-between items-start mb-5">
               <div class="space-y-0.5">
@@ -75,34 +43,30 @@
                 <h3 class="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{{ table.no }}</h3>
               </div>
               
-              <div :class="['w-10 h-10 rounded-2xl flex items-center justify-center transition-all shadow-inner', getStatusBg(table.status)]">
+              <div :class="['w-10 h-10 rounded-2xl flex items-center justify-center shadow-inner', getStatusIconBg(table.status)]">
                 <ion-icon :icon="table.status === 'available' ? addOutline : cartOutline" class="text-lg" />
               </div>
             </div>
 
             <div class="min-h-[55px] flex flex-col justify-end">
               <div v-if="table.status !== 'available'" class="space-y-2">
-                <div class="flex items-center gap-2">
-                  <div class="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-lg border border-slate-100 dark:border-white/5">
-                    <ion-icon :icon="timeOutline" class="text-[10px] text-slate-400" />
-                    <span class="text-[10px] font-bold text-slate-500">{{ table.timer }}</span>
-                  </div>
+                <div class="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-lg w-fit">
+                  <ion-icon :icon="timeOutline" class="text-[10px] text-slate-400" />
+                  <span class="text-[10px] font-bold text-slate-500">{{ table.timer }}</span>
                 </div>
-                <div class="text-[16px] font-black text-indigo-600 dark:text-indigo-400 leading-none">
-                  {{ table.total.toLocaleString() }} <small class="text-[9px] uppercase font-bold opacity-60">uzs</small>
+                <div class="text-[16px] font-black text-indigo-600 dark:text-indigo-400">
+                  {{ table.total.toLocaleString() }} <small class="text-[9px] uppercase opacity-60">uzs</small>
                 </div>
               </div>
 
               <div v-else class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                   <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                  <span class="text-[11px] font-black uppercase tracking-widest text-emerald-500">Bo'sh</span>
+                  <span class="text-[11px] font-black uppercase text-emerald-500">Bo'sh</span>
                 </div>
                 <p class="text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-md">{{ table.capacity }} kishilik</p>
               </div>
             </div>
-
-            <div class="absolute inset-0 bg-indigo-600/5 opacity-0 group-active:opacity-100 transition-opacity"></div>
           </div>
         </div>
 
@@ -111,7 +75,7 @@
             <ion-icon :icon="pulseOutline" class="text-3xl" />
           </div>
           <h3 class="text-slate-800 dark:text-white font-bold">Stollar topilmadi</h3>
-          <p class="text-xs text-slate-400 mt-1">Filterni o'zgartirib ko'ring</p>
+          <p class="text-xs text-slate-400 mt-1">Tanlangan filtr bo'yicha ma'lumot yo'q</p>
         </div>
       </div>
     </ion-content>
@@ -126,18 +90,15 @@ import { useRouter } from 'vue-router';
 import { modalController, IonPage, IonHeader, IonContent, IonIcon } from '@ionic/vue';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
-// UI & Components
+// UI Components
 import { TabelStore } from "../../stores/index.store";
-import { Button, Input } from "../../UI/UI";
+import { Button, Input ,BaseTabs,Header} from "../../UI/UI";
 import Footer from '../../partials/Footer.vue';
 import Modal from '../../components/Tabel/ActionModal.vue';
-import CartModal from '../../components/Menu/Cart.vue'; // Savatcha modali yo'li
+import CartModal from '../../components/Menu/Cart.vue';
 
 // Icons
-import { 
-  personOutline, timeOutline, searchOutline, arrowBackOutline,
-  pulseOutline, addOutline, cartOutline, closeOutline
-} from 'ionicons/icons';
+import { timeOutline, pulseOutline, addOutline, cartOutline } from 'ionicons/icons';
 
 const router = useRouter();
 const store = TabelStore();
@@ -145,14 +106,13 @@ const store = TabelStore();
 // --- STATE ---
 const isSearchActive = ref(false);
 const searchQuery = ref("");
-const activeStatus = ref('all');
-const isCategoryModalOpen = ref(false);
+const activeStatus = ref('all'); // Filtr mantiqi shunga bog'langan
 
 const statusFilters = [
-  { id: 'all', name: 'Barchasi' },
-  { id: 'available', name: 'Bo\'sh' },
-  { id: 'occupied', name: 'Band' },
-  { id: 'waiting', name: 'Hisob' }
+  { id: 'all', label: 'Barchasi', icon: 'fas fa-border-all' },
+  { id: 'available', label: 'Bo\'shlar', icon: 'fas fa-check-circle' },
+  { id: 'occupied', label: 'Bandlar', icon: 'fas fa-user-clock' },
+  { id: 'waiting', label: 'Hisob kutilmoqda', icon: 'fas fa-file-invoice-dollar' }
 ];
 
 const tables = ref([
@@ -164,7 +124,7 @@ const tables = ref([
   { id: 6, no: 'T-06', capacity: 2, status: 'occupied', timer: '30 min', total: 85000 }
 ]);
 
-// --- COMPUTED ---
+// --- FILTER LOGIC ---
 const filteredTables = computed(() => {
   return tables.value.filter(t => {
     const matchStatus = activeStatus.value === 'all' || t.status === activeStatus.value;
@@ -173,9 +133,9 @@ const filteredTables = computed(() => {
   });
 });
 
-const getCount = (status) => {
-  if (status === 'all') return tables.value.length;
-  return tables.value.filter(t => t.status === status).length;
+const onCategoryChange = async (id) => {
+  activeStatus.value = id;
+  await Haptics.impact({ style: ImpactStyle.Light });
 };
 
 // --- ACTIONS ---
@@ -188,57 +148,41 @@ const toggleSearch = async () => {
 const handleTableClick = async (table) => {
   await Haptics.impact({ style: ImpactStyle.Medium });
 
-  // 1. BO'SH STOL -> MENYUGA YO'NALTIRISH
   if (table.status === 'available') {
-    router.push({
-      name: 'menu', // Menyu sahifangiz yo'li
-    //   query: { table: table.no, id: table.id }
-    });
-  } 
-  
-  // 2. BAND STOL -> SAVATCHANI MODALDA OCHISH
-  else {
+    router.push({ name: 'menu' });
+  } else {
     const modal = await modalController.create({
       component: CartModal,
-      componentProps: {
-        tableInfo: table,
-        items: [], // Bu yerda store'dan joriy stol buyurtmalarini berasiz
-        isWaiting: table.status === 'waiting'
-      },
+      componentProps: { tableInfo: table },
       initialBreakpoint: 0.8,
       breakpoints: [0, 0.8, 1],
-      cssClass: 'cart-modal-custom'
     });
     return modal.present();
   }
 };
 
 // --- STYLE HELPERS ---
-const getStatusColor = (s) => {
-  if (s === 'available') return 'bg-emerald-500';
-  if (s === 'occupied') return 'bg-rose-500';
-  if (s === 'waiting') return 'bg-amber-500';
-  return 'bg-slate-200';
+const getStatusLineColor = (s) => {
+  const colors = { available: 'bg-emerald-500', occupied: 'bg-rose-500', waiting: 'bg-amber-500' };
+  return colors[s] || 'bg-slate-200';
 };
 
-const getStatusBg = (s) => {
-  if (s === 'available') return 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10';
-  if (s === 'occupied') return 'bg-rose-50 text-rose-600 dark:bg-rose-500/10';
-  if (s === 'waiting') return 'bg-amber-50 text-amber-600 dark:bg-amber-500/10';
+const getStatusIconBg = (s) => {
+  const bgs = {
+    available: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10',
+    occupied: 'bg-rose-50 text-rose-600 dark:bg-rose-500/10',
+    waiting: 'bg-amber-50 text-amber-600 dark:bg-amber-500/10'
+  };
+  return bgs[s] || 'bg-slate-100';
 };
 </script>
 
 <style scoped>
-/* Animations */
 .search-slide-enter-active, .search-slide-leave-active { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-.search-slide-enter-from { transform: translateY(-100%); opacity: 0; }
-.search-slide-leave-to { transform: translateY(-20px); opacity: 0; }
+.search-slide-enter-from { transform: translateY(-50%); opacity: 0; }
 
 .slide-fade-enter-active, .slide-fade-leave-active { transition: all 0.3s ease; }
-.slide-fade-enter-from, .slide-fade-leave-to { opacity: 0; transform: scale(0.95); }
+.slide-fade-enter-from, .slide-fade-leave-to { opacity: 0; transform: translateY(10px); }
 
-/* Utilities */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-ion-content { --padding-bottom: 100px; }
-* { -webkit-tap-highlight-color: transparent; }
+ion-content { --padding-bottom: 120px; }
 </style>
