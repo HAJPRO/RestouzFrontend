@@ -1,52 +1,30 @@
 <template>
   <ion-page class="bg-slate-50 dark:bg-[#020617]">
     <ion-header class="ion-no-border">
-      <div class=" relative bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-100 dark:border-white/5 pt-safe overflow-hidden">
+      <div class="relative bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-100 dark:border-white/5 pt-safe overflow-hidden">
         
         <transition name="slide-fade">
           <div v-if="!isSearchActive" class="px-4 h-14 mt-10 flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <Button  @click="$router.back()" icon="fas fa-arrow-left" size="sm" >
-              </Button>
+              <Button @click="$router.back()" icon="fas fa-arrow-left" size="sm"></Button>
               <h1 class="text-lg font-black text-slate-900 dark:text-white tracking-tight mt-3">Menyu</h1>
             </div>
 
             <div class="flex items-center gap-2">
-              <Button @click="toggleSearch" icon="fas fa-search" size="sm">
-              </Button>
-              
-              <Button @click="isCategoryModalOpen = true" icon="fas fa-list" size="sm">
-              </Button>
-
-              <Button @click="store.ModalAction()" icon="fas fa-plus" size="sm">
-              </Button>
+              <Button @click="toggleSearch" icon="fas fa-search" size="sm"></Button>
+              <Button @click="isCategoryModalOpen = true" icon="fas fa-list" size="sm"></Button>
             </div>
           </div>
         </transition>
 
-      <transition name="search-slide">
-  <div v-if="isSearchActive" class="mt-10 px-4 h-14 flex items-center gap-2 bg-white dark:bg-slate-950 shadow-sm">
-    
-    <div class="flex-1">
-      <Input 
-        v-model="searchQuery"
-        size="small" 
-        clearable 
-        iconPre="fas fa-search" 
-        placeholder="Taom izlash..." 
-        autofocus
-      />
-    </div>
-
-    <Button 
-      @click="toggleSearch" 
-      size="sm"
-      icon="fas fa-xmark"
-      class="mt-[-20px]"
-    </Button>
-
-  </div>
-</transition>
+        <transition name="search-slide">
+          <div v-if="isSearchActive" class="mt-10 px-4 h-14 flex items-center gap-2 bg-white dark:bg-slate-950 shadow-sm">
+            <div class="flex-1">
+              <Input v-model="searchQuery" size="small" clearable iconPre="fas fa-search" placeholder="Taom izlash..." autofocus />
+            </div>
+            <Button @click="toggleSearch" size="sm" icon="fas fa-xmark" class="mt-[-20px]"></Button>
+          </div>
+        </transition>
 
         <div v-if="!isSearchActive" class="px-4 py-2 flex items-center justify-between border-t border-slate-50 dark:border-white/5 bg-white/50 dark:bg-transparent">
           <div class="flex items-center gap-2">
@@ -60,16 +38,14 @@
       </div>
     </ion-header>
 
-    <ion-content :fullscreen="true">
-      <div class="max-w-7xl mx-auto px-4 py-6 pb-44">
+    <ion-content :fullscreen="true" class="ion-padding-bottom">
+      <div class="max-w-7xl mx-auto px-4 py-6 pb-60">
         
         <div v-if="filteredFoods.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div 
             v-for="food in filteredFoods" :key="food.id"
-            :class="[
-              'group bg-white dark:bg-slate-900 rounded-[30px] p-3 border transition-all duration-500 flex gap-4 items-center relative overflow-hidden',
-              getItemCount(food.id) > 0 ? 'border-indigo-500 shadow-md ring-1 ring-indigo-500/10' : 'border-slate-100 dark:border-white/5 shadow-sm'
-            ]"
+            :class="['group bg-white dark:bg-slate-900 rounded-[30px] p-3 border transition-all duration-500 flex gap-4 items-center relative overflow-hidden',
+              getItemCount(food.id) > 0 ? 'border-indigo-500 shadow-md ring-1 ring-indigo-500/10' : 'border-slate-100 dark:border-white/5 shadow-sm']"
           >
             <div class="relative w-24 h-24 flex-none overflow-hidden rounded-[22px] bg-slate-100 dark:bg-slate-800">
               <img :src="food.image" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
@@ -99,52 +75,72 @@
             </div>
           </div>
         </div>
-
-        <div v-else class="flex flex-col items-center gap-4 mt-20">
-          <i class="fas fa-pizza-slice text-6xl text-slate-300"></i>
-          <h2 class="text-xl font-black text-slate-500">Taom topilmadi</h2>
-          <p class="text-sm text-slate-400">Boshqa kalit so'z bilan qidirib ko'ring yoki kategoriyani o'zgartiring.</p>
-        </div>
-
       </div>
 
-      <div v-if="cartTotalItems > 0" class="fixed bottom-28 left-4 right-4 z-40 animate-slide-up">
-        <button @click="openCart" class="w-full bg-indigo-600 text-white h-16 rounded-[24px] shadow-2xl flex items-center justify-between px-4 group">
-          <div class="flex items-center gap-4">
-            <div class="w-11 h-11 bg-white/20 rounded-2xl flex items-center justify-center relative ring-1 ring-white/30">
-              <ion-icon :icon="cartOutline" class="text-xl" />
-              <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-slate-950 dark:border-indigo-600">{{ cartTotalItems }}</span>
+      <div v-if="cartTotalItems > 0" class="fixed bottom-24 left-4 right-4 z-40 animate-slide-up">
+        <div class="bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl border border-slate-100 dark:border-white/10 overflow-hidden">
+          
+          <div class="px-5 py-2.5 bg-slate-50/80 dark:bg-slate-900/50 backdrop-blur-md flex items-center justify-between border-b border-slate-100 dark:border-white/5">
+  
+  <div class="flex items-center gap-3">
+    <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white dark:bg-white/5 shadow-sm border border-slate-100 dark:border-white/5">
+      <div class="w-1 h-1 rounded-full bg-slate-400"></div>
+      <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">
+        Asosiy: <span class="text-slate-900 dark:text-slate-200">{{ subtotal.toLocaleString() }}</span>
+      </span>
+    </div>
+
+    <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100/50 dark:border-indigo-500/20">
+      <i class="fa-solid fa-bell-concierge text-[9px] text-indigo-500"></i>
+      <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-tight">
+        Xizmat: <span class="font-black">+{{ serviceFee.toLocaleString() }}</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900 dark:bg-indigo-600 shadow-lg shadow-slate-200 dark:shadow-indigo-900/20">
+    <i class="fa-solid fa-basket-shopping text-[9px] text-white/70"></i>
+    <span class="text-[9px] font-black text-white uppercase tracking-widest">
+      {{ cartTotalItems }} TA
+    </span>
+  </div>
+
+</div>
+
+          <div class="p-4 flex items-center justify-between gap-3">
+            <div class="flex-1" @click="openCart">
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Jami To'lov</p>
+              <div class="flex items-baseline gap-1">
+                <span class="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">{{ finalTotal.toLocaleString() }}</span>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">uzs</span>
+              </div>
             </div>
-            <div class="text-left">
-              <p class="text-[10px] font-black uppercase opacity-60 leading-none mb-1">Jami summa</p>
-              <p class="text-base font-black tracking-tighter">{{ cartTotalPrice.toLocaleString() }} so'm</p>
-            </div>
+
+          <Button 
+  @click="openCart" 
+  size="sm" 
+  leftIcon="fas fa-shopping-basket" 
+  class="!bg-indigo-600 hover:!bg-indigo-700 shadow-lg shadow-indigo-500/30 !rounded-2xl transition-all active:scale-95"
+>
+  <span class="font-black uppercase tracking-wider text-[11px]">Savat</span>
+</Button>
           </div>
-          <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl">
-            <span class="text-xs font-black uppercase tracking-widest">Buyurtma</span>
-            <ion-icon :icon="chevronForwardOutline" />
-          </div>
-        </button>
+        </div>
       </div>
     </ion-content>
 
-    <ion-modal :is-open="isCategoryModalOpen" @didDismiss="isCategoryModalOpen = false" :initial-breakpoint="0.5" :breakpoints="[0, 0.5, 0.85]" handle-behavior="cycle">
+    <ion-modal :is-open="isCategoryModalOpen" @didDismiss="isCategoryModalOpen = false" :initial-breakpoint="0.5" :breakpoints="[0, 0.5, 0.85]">
       <div class="p-6 bg-white dark:bg-slate-950 h-full">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-black dark:text-white uppercase tracking-tight">Kategoriyalar</h2>
-          <button @click="isCategoryModalOpen = false" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center">
-            <ion-icon :icon="closeOutline" />
-          </button>
-        </div>
+        <h2 class="text-xl font-black dark:text-white uppercase mb-6 tracking-tight">Kategoriyalar</h2>
         <div class="grid grid-cols-2 gap-3 pb-10">
           <button 
             v-for="cat in categories" :key="cat.id" 
             @click="activeCategory = cat.id; isCategoryModalOpen = false"
-            :class="['p-5 rounded-[28px] border-2 flex flex-col items-center gap-3 transition-all active:scale-95', 
-              activeCategory === cat.id ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl shadow-indigo-500/20' : 'bg-slate-50 dark:bg-slate-900 border-transparent text-slate-600 dark:text-slate-400']"
+            :class="['p-5 rounded-[28px] border-2 flex flex-col items-center gap-3 transition-all', 
+              activeCategory === cat.id ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl shadow-indigo-500/20' : 'bg-slate-50 dark:bg-slate-900 border-transparent text-slate-600']"
           >
             <i :class="[cat.icon, 'text-2xl']"></i>
-            <span class="text-xs font-black uppercase tracking-wide">{{ cat.label }}</span>
+            <span class="text-xs font-black uppercase">{{ cat.label }}</span>
           </button>
         </div>
       </div>
@@ -155,14 +151,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { IonPage, IonHeader, IonContent, IonIcon, IonModal, modalController } from '@ionic/vue';
-import { 
-  arrowBackOutline, addOutline, searchOutline, gridOutline, 
-  removeOutline, cartOutline, trashOutline, chevronForwardOutline, closeOutline 
-} from 'ionicons/icons';
+import { addOutline, removeOutline, cartOutline, trashOutline, chevronForwardOutline, closeOutline } from 'ionicons/icons';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { Input,Button,Select } from '../../UI/UI'; 
+import { Input, Button } from '../../UI/UI'; 
 import Footer from '../../partials/Footer.vue';
 import CartModal from './Cart.vue';
 
@@ -171,7 +164,7 @@ const isSearchActive = ref(false);
 const isCategoryModalOpen = ref(false);
 const activeCategory = ref(1);
 const searchQuery = ref("");
-const cart = ref({});
+const cart = ref({}); // { foodId: quantity }
 
 const categories = [
   { id: 1, label: 'Fast Food', key: 'fastfood', icon: 'fa-solid fa-burger' },
@@ -186,7 +179,7 @@ const foods = ref([
   { id: 103, catId: 2, name: 'Osh (Palov)', price: 45000, description: 'Buxorocha so\'faki palov', image: 'https://images.unsplash.com/photo-1512058560366-cd242d4586ee?w=300' },
 ]);
 
-// --- COMPUTED ---
+// --- COMPUTED (HISOB-KITOB) ---
 const currentCategory = computed(() => categories.find(c => c.id === activeCategory.value));
 
 const filteredFoods = computed(() => {
@@ -198,11 +191,24 @@ const filteredFoods = computed(() => {
 });
 
 const cartTotalItems = computed(() => Object.values(cart.value).reduce((a, b) => a + b, 0));
-const cartTotalPrice = computed(() => {
+
+// Hisob-kitoblar (Xizmat haqi va jami)
+const subtotal = computed(() => {
   return Object.entries(cart.value).reduce((total, [id, qty]) => {
     const food = foods.value.find(f => f.id == id);
     return total + (food ? food.price * qty : 0);
   }, 0);
+});
+
+const serviceFee = computed(() => subtotal.value * 0.10); // 10% xizmat haqi
+const finalTotal = computed(() => subtotal.value + serviceFee.value);
+
+// Modalga uzatish uchun savat massivi
+const cartItemsArray = computed(() => {
+  return Object.entries(cart.value).map(([id, qty]) => {
+    const food = foods.value.find(f => f.id == id);
+    return food ? { ...food, quantity: qty } : null;
+  }).filter(item => item !== null);
 });
 
 // --- ACTIONS ---
@@ -213,39 +219,74 @@ const toggleSearch = async () => {
 };
 
 const updateCart = async (food, change) => {
-  const qty = (cart.value[food.id] || 0) + change;
-  qty <= 0 ? delete cart.value[food.id] : cart.value[food.id] = qty;
+  const currentQty = cart.value[food.id] || 0;
+  const newQty = currentQty + change;
+  if (newQty <= 0) {
+    delete cart.value[food.id];
+  } else {
+    cart.value[food.id] = newQty;
+  }
   await Haptics.impact({ style: ImpactStyle.Medium });
 };
 
-const removeFromCart = (id) => delete cart.value[id];
+const removeFromCart = async (id) => {
+  delete cart.value[id];
+  await Haptics.impact({ style: ImpactStyle.Light });
+};
+
 const getItemCount = (id) => cart.value[id] || 0;
+
+// --- CART MODAL BILAN SINXRONIZATSIYA ---
+const syncUpdateQty = (ev) => {
+  const { id, change } = ev.detail;
+  const food = foods.value.find(f => f.id === id);
+  if (food) updateCart(food, change);
+};
+
+const syncRemoveItem = (ev) => {
+  removeFromCart(ev.detail);
+};
+
+onMounted(() => {
+  window.addEventListener('cart:update-qty', syncUpdateQty);
+  window.addEventListener('cart:remove-item', syncRemoveItem);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('cart:update-qty', syncUpdateQty);
+  window.removeEventListener('cart:remove-item', syncRemoveItem);
+});
 
 const openCart = async () => {
   const modal = await modalController.create({
     component: CartModal,
-    componentProps: { 
-      items: Object.entries(cart.value).map(([id, q]) => ({...foods.value.find(f => f.id == id), quantity: q})),
-      total: cartTotalPrice.value 
-    },
-    initialBreakpoint: 0.75,
-    breakpoints: [0, 0.75, 1]
+    componentProps: {
+      items: cartItemsArray.value,
+      staffList: [{ id: 1, label: 'Umid Shomurodov' }], // Bekenddan kelishi kerak
+      customerList: [{ id: 1, label: 'Umumiy mehmon' }]
+    }
   });
-  modal.present();
+
+  await modal.present();
+
+  const { data, role } = await modal.onWillDismiss();
+  if (role === 'confirm') {
+    // Buyurtma muvaffaqiyatli yakunlandi
+    cart.value = {};
+    Haptics.impact({ style: ImpactStyle.Heavy });
+  }
 };
 </script>
 
 <style scoped>
-/* Search Animation */
-.search-slide-enter-active, .search-slide-leave-active { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.pt-safe { padding-top: env(safe-area-inset-top); }
+.search-slide-enter-active, .search-slide-leave-active { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 .search-slide-enter-from { transform: translateY(-100%); opacity: 0; }
-.search-slide-leave-to { transform: translateY(-20px); opacity: 0; }
+.search-slide-leave-to { transform: translateY(-100%); opacity: 0; }
 
-.slide-fade-enter-active, .slide-fade-leave-active { transition: all 0.2s ease; }
-.slide-fade-enter-from, .slide-fade-leave-to { opacity: 0; transform: scale(0.98); }
-
-/* Custom Styles */
-ion-modal { --border-radius: 32px; }
-.animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-@keyframes slideUp { from { transform: translateY(100px); } to { transform: translateY(0); } }
+.animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes slideUp { 
+  from { transform: translateY(100px); opacity: 0; } 
+  to { transform: translateY(0); opacity: 1; } 
+}
 </style>

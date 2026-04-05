@@ -40,7 +40,7 @@
             <div class="flex justify-between items-start mb-5">
               <div class="space-y-0.5">
                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Stol</span>
-                <h3 class="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{{ table.no }}</h3>
+                <h3 class="text-xl font-black text-slate-900 dark:text-white tracking-tighter">{{ table.no }}</h3>
               </div>
               
               <div :class="['w-10 h-10 rounded-2xl flex items-center justify-center shadow-inner', getStatusIconBg(table.status)]">
@@ -64,7 +64,7 @@
                   <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                   <span class="text-[11px] font-black uppercase text-emerald-500">Bo'sh</span>
                 </div>
-                <p class="text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-md">{{ table.capacity }} kishilik</p>
+                <p class="text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-md">{{ table.capacity }}kishi</p>
               </div>
             </div>
           </div>

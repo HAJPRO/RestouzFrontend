@@ -1,7 +1,7 @@
 <template>
   <ion-page class="bg-slate-50 dark:bg-slate-950">
    <Header 
-    title="Sotuv statistikasi" 
+    title="Statistika" 
     searchable 
     v-model="searchQuery"
     searchPlaceholder="Taom izlash..."
