@@ -1,5 +1,7 @@
 <script setup>
-import { ref, computed, nextTick, onMounted, onUnmounted, useSlots } from 'vue';
+import { ref, computed, nextTick, onMounted, onUnmounted, useSlots, watch, useAttrs } from 'vue';
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
   modelValue: { type: [String, Number, Object, Array], default: null },
@@ -25,22 +27,28 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
   error: { type: [Boolean, String], default: false },
+  success: { type: Boolean, default: false },
   required: { type: Boolean, default: false },
+  rules: { type: Array, default: () => [] },
   
   // Matnlar
   noDataText: { type: String, default: "Ma'lumot topilmadi" },
   addText: { type: String, default: "yangi element sifatida qo'shish" }
 });
 
-const emit = defineEmits(['update:modelValue', 'change', 'add', 'clear']);
+const emit = defineEmits(['update:modelValue', 'change', 'add', 'clear', 'blur', 'focus']);
 const slots = useSlots();
+const attrs = useAttrs();
 
-const sizeMap = {
-  small: { h: 'min-h-[38px]', text: 'text-[12px]', icon: 'text-sm', rounded: 'rounded-xl' },
-  middle: { h: 'min-h-[46px]', text: 'text-[14px]', icon: 'text-base', rounded: 'rounded-2xl' },
-  large: { h: 'min-h-[54px]', text: 'text-[16px]', icon: 'text-lg', rounded: 'rounded-[22px]' }
-};
-const config = computed(() => sizeMap[props.size]);
+// --- SIZE CONFIG (Input bilan bir xil) ---
+const sizeConfig = computed(() => {
+  const configs = {
+    small: { h: 'min-h-[38px]', font: 'text-[12px]', icon: 'text-sm', rounded: 'rounded-xl' },
+    middle: { h: 'min-h-[46px]', font: 'text-[14px]', icon: 'text-base', rounded: 'rounded-2xl' },
+    large: { h: 'min-h-[54px]', font: 'text-[16px]', icon: 'text-lg', rounded: 'rounded-[22px]' }
+  };
+  return configs[props.size] || configs.middle;
+});
 
 const isOpen = ref(false);
 const triggerRef = ref(null);
@@ -49,23 +57,118 @@ const searchInputRef = ref(null);
 const searchQuery = ref('');
 const dropdownPlacement = ref('bottom');
 
+// --- VALIDATION LOGIC ---
+const internalError = ref(false);
+
+const runValidation = (value) => {
+  if (props.rules && props.rules.length > 0) {
+    for (const rule of props.rules) {
+      const result = rule(value);
+      if (result !== true) {
+        internalError.value = result;
+        return false;
+      }
+    }
+  }
+  internalError.value = false;
+  return true;
+};
+
+const validate = () => runValidation(props.modelValue);
+const resetValidation = () => { internalError.value = false; };
+
+defineExpose({ validate, resetValidation });
+
+watch(() => props.modelValue, (newVal) => {
+  if (internalError.value) runValidation(newVal);
+});
+
+// --- STYLES (Input komponenti bilan bir xil mantiq) ---
+const wrapperClasses = computed(() => [
+  'relative flex items-center w-full transition-all duration-300 border shadow-sm group/wrapper px-4 gap-3 cursor-pointer select-none',
+  'bg-white dark:bg-slate-950',
+  sizeConfig.value.rounded,
+  sizeConfig.value.h,
+  (props.error || internalError.value) ? 'border-rose-400 ring-4 ring-rose-500/10' : 
+  props.success ? 'border-emerald-400 ring-4 ring-emerald-500/10' : 
+  isOpen.value ? 'border-indigo-500 ring-4 ring-indigo-500/10 shadow-indigo-100 dark:shadow-none' : 
+  'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700',
+  (props.disabled || props.loading) ? 'opacity-60 cursor-not-allowed bg-slate-50 dark:bg-slate-900/50' : ''
+]);
+
 const hasValue = computed(() => {
   if (props.multiple) return Array.isArray(props.modelValue) && props.modelValue.length > 0;
   return props.modelValue !== null && props.modelValue !== undefined && props.modelValue !== '';
 });
 
-// --- UNIVERSAL QIDIRUV (Barcha atributlar bo'yicha) ---
+const labelClasses = computed(() => {
+  const hasPrefix = !!slots.prefix || !!props.iconPre;
+  const leftPadding = hasPrefix ? (props.size === 'small' ? 'left-9' : 'left-10') : 'left-4';
+
+  return [
+    'absolute font-bold transition-all duration-200 select-none z-10 pointer-events-none tracking-wide uppercase text-[10px]',
+    'bg-white dark:bg-slate-800 px-1.5 rounded',
+    (isOpen.value || hasValue.value)
+      ? `-top-2.5 ${leftPadding} text-indigo-600 dark:text-indigo-400`
+      : `top-1/2 -translate-y-1/2 ${leftPadding} text-slate-400`,
+    (props.error || internalError.value) ? '!text-rose-500' : ''
+  ];
+});
+
+// --- POSITION LOGIC ---
+const updatePosition = () => {
+  if (!triggerRef.value || !isOpen.value || !dropdownRef.value) return;
+  const rect = triggerRef.value.getBoundingClientRect();
+  const dropdownHeight = dropdownRef.value.offsetHeight;
+  const windowHeight = window.innerHeight;
+  
+  const spaceBelow = windowHeight - rect.bottom;
+  const spaceAbove = rect.top;
+  
+  dropdownPlacement.value = (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) ? 'top' : 'bottom';
+  dropdownRef.value.style.width = props.dropdownWidth === 'trigger' ? `${rect.width}px` : props.dropdownWidth;
+  dropdownRef.value.style.left = `${rect.left}px`;
+  
+  if (dropdownPlacement.value === 'bottom') {
+    dropdownRef.value.style.top = `${rect.bottom + 6}px`;
+    dropdownRef.value.style.bottom = 'auto';
+  } else {
+    dropdownRef.value.style.bottom = `${windowHeight - rect.top + 6}px`;
+    dropdownRef.value.style.top = 'auto';
+  }
+};
+
+const handleScroll = () => isOpen.value && updatePosition();
+
+const open = () => {
+  if (!props.disabled && !props.loading) {
+    isOpen.value = true;
+    emit('focus');
+    nextTick(() => {
+      updatePosition();
+      searchInputRef.value?.focus();
+      window.addEventListener('scroll', handleScroll, true);
+      window.addEventListener('resize', updatePosition);
+    });
+  }
+};
+
+const close = () => {
+  isOpen.value = false;
+  searchQuery.value = '';
+  runValidation(props.modelValue);
+  window.removeEventListener('scroll', handleScroll, true);
+  window.removeEventListener('resize', updatePosition);
+  emit('blur');
+};
+
+// --- DATA LOGIC ---
 const filteredOptions = computed(() => {
   if (!props.searchable || !searchQuery.value) return props.options;
-  
   const q = searchQuery.value.toLowerCase().trim();
-  
-  return props.options.filter(opt => {
-    // Obyektdagi barcha qiymatlarni (fullname, phoneNumber, id, h.k) tekshirish
-    return Object.values(opt).some(val => 
-      val && String(val).toLowerCase().includes(q)
-    );
-  });
+  return props.options.filter(opt => 
+    Object.values(opt).some(val => val && String(val).toLowerCase().includes(q))
+  );
 });
 
 const selectedOptions = computed(() => {
@@ -79,15 +182,6 @@ const isSelected = (option) => {
   const val = option[props.valueKey];
   if (props.multiple) return Array.isArray(props.modelValue) && props.modelValue.includes(val);
   return String(props.modelValue) === String(val);
-};
-
-const handleClear = () => {
-  const emptyValue = props.multiple ? [] : null;
-  emit('update:modelValue', emptyValue);
-  emit('change', emptyValue);
-  emit('clear');
-  searchQuery.value = '';
-  if (isOpen.value) close();
 };
 
 const handleSelect = (option) => {
@@ -106,131 +200,127 @@ const handleSelect = (option) => {
   }
 };
 
-const updatePosition = () => {
-  if (!triggerRef.value || !isOpen.value) return;
-  const rect = triggerRef.value.getBoundingClientRect();
-  dropdownPlacement.value = (window.innerHeight - rect.bottom < 320) ? 'top' : 'bottom';
-  
-  if (dropdownRef.value) {
-    dropdownRef.value.style.width = props.dropdownWidth === 'trigger' ? `${rect.width}px` : props.dropdownWidth;
-    dropdownRef.value.style.left = `${rect.left}px`;
-    
-    if (dropdownPlacement.value === 'bottom') {
-      dropdownRef.value.style.top = `${rect.bottom + 6}px`;
-      dropdownRef.value.style.transformOrigin = 'top';
-    } else {
-      dropdownRef.value.style.bottom = `${window.innerHeight - rect.top + 6}px`;
-      dropdownRef.value.style.transformOrigin = 'bottom';
-    }
-  }
+const handleClear = () => {
+  const emptyValue = props.multiple ? [] : null;
+  emit('update:modelValue', emptyValue);
+  emit('change', emptyValue);
+  emit('clear');
 };
 
-const open = () => { if (!props.disabled && !props.loading) { isOpen.value = true; nextTick(() => { updatePosition(); searchInputRef.value?.focus(); window.addEventListener('scroll', updatePosition, true); }); } };
-const close = () => { isOpen.value = false; searchQuery.value = ''; window.removeEventListener('scroll', updatePosition, true); };
-const handleAdd = () => { if (searchQuery.value.trim()) { emit('add', searchQuery.value.trim()); searchQuery.value = ''; if (!props.multiple) close(); } };
-
-onMounted(() => document.addEventListener('mousedown', (e) => { if (!triggerRef.value?.contains(e.target) && !dropdownRef.value?.contains(e.target)) close(); }));
+onMounted(() => {
+  document.addEventListener('mousedown', (e) => {
+    if (!triggerRef.value?.contains(e.target) && !dropdownRef.value?.contains(e.target)) close();
+  });
+});
 </script>
 
 <template>
-  <div class="w-full font-sans antialiased">
-    <label v-if="label" class="inline-block mb-1.5 ml-1 text-[10px] font-bold text-slate-500 dark:text-slate-400  tracking-wider">
-      {{ label }} <span v-if="required" class="text-rose-500">*</span>
-    </label>
+  <div class="flex flex-col w-full group/input">
+    
+    <div ref="triggerRef" @click="isOpen ? close() : open()" :class="wrapperClasses">
+      
+      <label v-if="label" :class="labelClasses">
+        {{ label }} <span v-if="required" class="text-rose-500">*</span>
+      </label>
 
-    <div ref="triggerRef" @click="isOpen ? close() : open()"
-      :class="[
-        'relative flex items-center transition-all duration-300 border-2 cursor-pointer outline-none select-none px-4 gap-3',
-        config.h, config.rounded,
-        isOpen ? 'border-indigo-500 bg-white dark:bg-slate-900 ring-4 ring-indigo-500/10 shadow-lg' : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700',
-        error ? 'border-rose-500 bg-rose-50/20' : '',
-        disabled ? 'opacity-40 cursor-not-allowed grayscale' : ''
-      ]"
-    >
-      <slot name="prefix"><i v-if="iconPre" :class="[iconPre, config.icon, 'text-slate-400 dark:text-slate-600']"></i></slot>
+      <div v-if="$slots.prefix || iconPre" 
+        class="flex items-center justify-center shrink-0 transition-all duration-300"
+        :class="[
+          sizeConfig.icon,
+          isOpen ? 'text-indigo-500 scale-110' : (internalError ? 'text-rose-400' : 'text-slate-400')
+        ]"
+      >
+        <slot name="prefix"><i :class="iconPre"></i></slot>
+      </div>
 
       <div class="flex-1 flex items-center gap-2 overflow-hidden py-1">
         <template v-if="multiple && Array.isArray(selectedOptions)">
           <div class="flex flex-wrap gap-1.5 overflow-hidden">
             <div v-for="opt in selectedOptions" :key="opt[valueKey]"
               class="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-bold border border-indigo-500/10 animate-in zoom-in duration-200">
-              <i v-if="opt[iconKey]" :class="opt[iconKey]" class="text-[10px]"></i>
               {{ opt[labelKey] }}
-              <i @click.stop="handleSelect(opt)" class="fa-solid fa-xmark cursor-pointer opacity-60 hover:opacity-100 ml-1"></i>
+              <i @click.stop="handleSelect(opt)" class="fa-solid fa-xmark cursor-pointer opacity-60 hover:opacity-100 ml-1 text-[10px]"></i>
             </div>
           </div>
-          <span v-if="selectedOptions.length === 0" class="text-slate-400 dark:text-slate-600 truncate" :class="config.text">{{ placeholder }}</span>
+          <span v-if="selectedOptions.length === 0 && isOpen" class="text-slate-300 italic" :class="sizeConfig.font">{{ placeholder }}</span>
         </template>
+
         <template v-else>
           <div v-if="selectedOptions" class="flex items-center gap-2.5 truncate">
             <i v-if="selectedOptions[iconKey]" :class="[selectedOptions[iconKey], 'text-indigo-500']"></i>
-            <span class="font-bold text-slate-800 dark:text-slate-100 truncate tracking-tight" :class="config.text">{{ selectedOptions[labelKey] }}</span>
+            <span class="font-bold text-slate-700 dark:text-slate-100 truncate" :class="sizeConfig.font">{{ selectedOptions[labelKey] }}</span>
           </div>
-          <span v-else class="text-slate-400 dark:text-slate-600 truncate italic" :class="config.text">{{ placeholder }}</span>
+          <span v-else-if="isOpen" class="text-slate-300 italic" :class="sizeConfig.font">{{ placeholder }}</span>
         </template>
       </div>
 
-      <div class="flex items-center gap-2 ml-auto">
-        <button v-if="clearable && hasValue && !disabled" @click.stop="handleClear" type="button" class="p-1 rounded-full text-slate-300 hover:text-rose-500 transition-colors">
-          <i class="fa-solid fa-circle-xmark text-sm"></i>
-        </button>
+      <div class="flex items-center gap-2 ml-auto shrink-0">
+        <i v-if="loading" class="fa-solid fa-spinner fa-spin text-indigo-500" :class="sizeConfig.icon"></i>
+        
+        <transition name="fade">
+          <button v-if="clearable && hasValue && !disabled" @click.stop="handleClear" type="button" class="p-1 rounded-full text-slate-300 hover:text-rose-500 transition-colors">
+            <i class="fa-solid fa-circle-xmark text-sm"></i>
+          </button>
+        </transition>
+
         <i :class="['fa-solid fa-chevron-down text-[10px] text-slate-300 transition-transform duration-500', isOpen ? 'rotate-180 text-indigo-500' : '']"></i>
+        
+        <i v-if="(error || internalError) && !loading" class="fa-solid fa-circle-exclamation text-rose-500 animate-pulse" :class="sizeConfig.icon"></i>
+        <i v-if="success && !loading" class="fa-solid fa-circle-check text-emerald-500" :class="sizeConfig.icon"></i>
       </div>
+    </div>
+
+    <div class="min-h-[20px] pt-1 px-2">
+      <transition name="msg">
+        <p v-if="error || internalError" class="text-[10px] font-bold text-rose-500 flex items-center gap-1">
+          <span class="w-1 h-1 bg-rose-500 rounded-full"></span> 
+          {{ typeof (error || internalError) === 'string' ? (error || internalError) : 'Majburiy tanlov' }}
+        </p>
+      </transition>
     </div>
 
     <Teleport to="body">
       <transition name="pop">
-        <div v-if="isOpen" ref="dropdownRef" class="fixed z-[99999] flex flex-col bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-2xl rounded-[24px] overflow-hidden">
+        <div v-if="isOpen" ref="dropdownRef" 
+          class="fixed z-[99999] flex flex-col bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-2xl rounded-[24px] overflow-hidden">
           
           <div v-if="searchable" class="p-3 bg-slate-50/50 dark:bg-slate-800/20 border-b border-slate-100 dark:border-slate-800/50">
             <div class="relative group">
-              <input ref="searchInputRef" v-model="searchQuery" class="w-full bg-white dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-xl py-1.5 pl-10 pr-4 text-sm focus:border-indigo-500/50 dark:text-white transition-all shadow-sm" placeholder="Qidiruv..." @click.stop />
+              <input ref="searchInputRef" v-model="searchQuery" class="w-full bg-white dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-xl py-1.5 pl-10 pr-4 text-sm focus:border-indigo-500/50 dark:text-white transition-all shadow-sm outline-none" placeholder="Qidiruv..." @click.stop />
               <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600 text-xs"></i>
             </div>
           </div>
 
-          <ul class="flex-1 overflow-y-auto p-2 custom-scrollbar max-h-[350px]">
-            <li v-if="filteredOptions.length === 0" class="py-12 px-6 text-center">
-               <div v-if="allowAdd && searchQuery.trim()" class="flex flex-col items-center gap-4 animate-in zoom-in">
-                  <div class="w-14 h-14 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 shadow-inner">
-                    <i class="fa-solid fa-plus text-2xl"></i>
-                  </div>
-                  <div class="space-y-1">
-                    <p class="text-base font-bold text-slate-700 dark:text-slate-200 italic">"{{ searchQuery }}"</p>
-                    <p class="text-[11px] text-slate-400 uppercase tracking-[0.2em] font-black">{{ addText }}</p>
-                  </div>
-                  <button @click="handleAdd" type="button" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-black transition-all shadow-xl shadow-indigo-600/30 active:scale-95">
-                    YANGI QO'SHISH
-                  </button>
-               </div>
-               <div v-else class="flex flex-col items-center gap-3 opacity-20 py-8">
-                 <i class="fa-solid fa-box-open text-4xl text-slate-400"></i>
-                 <span class="text-[12px] font-black uppercase tracking-widest text-slate-500">{{ noDataText }}</span>
-               </div>
-            </li>
+          <ul class="flex-1 overflow-y-auto p-2 custom-scrollbar max-h-[300px]">
+             <li v-if="filteredOptions.length === 0" class="py-8 px-6 text-center">
+                <div v-if="allowAdd && searchQuery.trim()" class="flex flex-col items-center gap-3 animate-in zoom-in">
+                   <p class="text-sm font-bold text-slate-700 dark:text-slate-200 italic">"{{ searchQuery }}"</p>
+                   <button @click="handleAdd" type="button" class="px-6 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black shadow-lg hover:bg-indigo-700 active:scale-95 transition-all">
+                      {{ addText }}
+                   </button>
+                </div>
+                <div v-else class="opacity-30 flex flex-col items-center">
+                  <i class="fa-solid fa-box-open text-2xl mb-2"></i>
+                  <p class="text-[10px] font-black uppercase tracking-widest">{{ noDataText }}</p>
+                </div>
+             </li>
 
-            <li v-for="opt in filteredOptions" :key="opt[valueKey]" @click="handleSelect(opt)"
-              :class="[
-                'flex items-center justify-between px-4 py-3.5 mb-1.5 rounded-2xl cursor-pointer transition-all duration-300 group/item relative overflow-hidden',
-                isSelected(opt) ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 translate-x-1' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:translate-x-1.5'
-              ]"
-            >
-              <div class="flex items-center gap-4 z-10 w-full">
-                 <div v-if="multiple" class="w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all shrink-0"
-                    :class="isSelected(opt) ? 'bg-white border-white' : 'border-slate-200 dark:border-slate-800 group-hover/item:border-indigo-500'">
-                    <i v-if="isSelected(opt)" class="fa-solid fa-check text-[10px] text-indigo-600 font-black"></i>
+             <li v-for="opt in filteredOptions" :key="opt[valueKey]" @click="handleSelect(opt)"
+               :class="[
+                 'flex items-center justify-between px-4 py-3 mb-1.5 rounded-2xl cursor-pointer transition-all duration-300 relative overflow-hidden group/item',
+                 isSelected(opt) ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+               ]"
+             >
+               <div class="flex items-center gap-3 z-10 w-full">
+                 <div v-if="multiple" class="w-4 h-4 rounded-md border-2 flex items-center justify-center transition-all shrink-0"
+                   :class="isSelected(opt) ? 'bg-white border-white' : 'border-slate-300 group-hover/item:border-indigo-500'">
+                   <i v-if="isSelected(opt)" class="fa-solid fa-check text-[8px] text-indigo-600 font-black"></i>
                  </div>
-                 
-                 <slot name="option" :option="opt">
-                    <div class="flex items-center gap-3">
-                        <i v-if="opt[iconKey]" :class="opt[iconKey]" class="w-4 text-center opacity-80 group-hover/item:scale-125 transition-transform duration-500"></i>
-                        <span class="text-[15px] font-bold tracking-tight">{{ opt[labelKey] }}</span>
-                    </div>
-                 </slot>
-              </div>
-              
-              <i v-if="!multiple && isSelected(opt)" class="fa-solid fa-circle-check text-white text-lg animate-in zoom-in duration-500 shrink-0 ml-2"></i>
-            </li>
+                 <i v-if="opt[iconKey]" :class="opt[iconKey]" class="opacity-80"></i>
+                 <span class="text-sm font-bold tracking-tight">{{ opt[labelKey] }}</span>
+               </div>
+               <i v-if="!multiple && isSelected(opt)" class="fa-solid fa-circle-check text-white text-lg animate-in zoom-in"></i>
+             </li>
           </ul>
         </div>
       </transition>
@@ -240,13 +330,20 @@ onMounted(() => document.addEventListener('mousedown', (e) => { if (!triggerRef.
 
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-indigo-500; }
-.pop-enter-active { animation: pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.pop-leave-active { animation: pop-in 0.25s reverse ease-in; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+
+.pop-enter-active { animation: pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.pop-leave-active { animation: pop-in 0.2s reverse ease-in; }
+
 @keyframes pop-in {
-  0% { opacity: 0; transform: scale(0.9) translateY(15px); filter: blur(10px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+  0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
-.list-move, .list-enter-active, .list-leave-active { transition: all 0.3s ease; }
-.list-enter-from, .list-leave-to { opacity: 0; transform: translateY(10px); }
+
+.msg-enter-active, .msg-leave-active { transition: all 0.3s ease; }
+.msg-enter-from, .msg-leave-to { opacity: 0; transform: translateX(-10px); }
+
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; transform: scale(0.8); }
 </style>

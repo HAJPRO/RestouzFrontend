@@ -4,6 +4,7 @@ import { TabelService } from "../../ApiService/index.service";
 
 export const TabelStore = defineStore('TabelStore', {
   state: () => ({
+    model : {},
     isModal: false,
     tabels: [], // Ma'lumotlarni saqlash uchun
     loading: false

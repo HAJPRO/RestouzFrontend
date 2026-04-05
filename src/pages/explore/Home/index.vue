@@ -2,7 +2,7 @@
   <ion-page class="bg-slate-50 dark:bg-slate-950">
     <Header />
 
-    <ion-content :fullscreen="true" class="bg-slate-50 dark:bg-[#020617]">
+    <ion-content :fullscreen="true" class="bg-slate-50 dark:bg-[#020617] mt-2">
       <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
         <ion-refresher-content 
           pulling-icon="chevron-down-outline" 
@@ -154,8 +154,8 @@ import {
   IonIcon 
 } from '@ionic/vue';
 import { ref } from 'vue';
-import Header from '../../partials/Header.vue';
-import Footer from '../../partials/Footer.vue';
+import Header from '../../../partials/Header.vue';
+import Footer from '../../../partials/Footer.vue';
 
 // Statik ma'lumotlar
 const topStaff = ref([

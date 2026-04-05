@@ -79,7 +79,7 @@ const getVariantClasses = () => {
   const isOutline = props.outline;
   const palettes = {
     primary: {
-      solid: 'border-transparent text-white bg-gradient-to-r from-indigo-600 to-indigo-500 shadow-indigo-500/30',
+      solid: 'border-transparent text-white bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/30',
       outline: 'bg-transparent border-indigo-600 text-indigo-600 hover:bg-indigo-50'
     },
     dark: {
@@ -89,10 +89,28 @@ const getVariantClasses = () => {
     secondary: {
       solid: 'bg-white text-slate-700 border-slate-200 hover:border-indigo-200 shadow-slate-200/50',
       outline: 'bg-transparent border-slate-300 text-slate-600 hover:bg-slate-100'
+    },
+    success: {
+      solid: 'border-transparent text-white bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/30',
+      outline: 'bg-transparent border-emerald-600 text-emerald-600 hover:bg-emerald-50'
+    },
+    danger: {
+      solid: 'border-transparent text-white bg-red-600 hover:bg-red-700 shadow-red-500/30',
+      outline: 'bg-transparent border-red-600 text-red-600 hover:bg-red-50'
+    },
+    warning: {
+      solid: 'border-transparent text-white bg-amber-500 hover:bg-amber-600 shadow-amber-500/30',
+      outline: 'bg-transparent border-amber-500 text-amber-500 hover:bg-amber-50'
+    },
+    info: {
+      solid: 'border-transparent text-white bg-sky-500 hover:bg-sky-600 shadow-sky-500/30',
+      outline: 'bg-transparent border-sky-500 text-sky-500 hover:bg-sky-50'
     }
-    // ... qolgan variantlar (success, danger) ham shu formatda
   };
-  return isOutline ? palettes[props.variant]?.outline : palettes[props.variant]?.solid;
+
+  // Tanlangan variantni olish, agar topilmasa 'primary'ga qaytish (fallback)
+  const selected = palettes[props.variant] || palettes.primary;
+  return isOutline ? selected.outline : selected.solid;
 };
 
 const buttonClasses = computed(() => {

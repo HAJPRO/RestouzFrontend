@@ -10,6 +10,7 @@ export { default as Drawer } from './Drawer.vue';
 export { default as ExportDropdown } from './ExportDropdown.vue';
 export { default as Form } from './Form.vue';
 export { default as Input } from './Input.vue';
+export { default as TextArea } from './TextArea.vue';
 export { default as Modal } from './Modal.vue';
 export { default as Select } from './Select.vue';
 export { default as Table } from './Table.vue';

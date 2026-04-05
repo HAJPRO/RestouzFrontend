@@ -1,11 +1,11 @@
 <script setup>
 import { ref } from "vue";
-import { storeToRefs } from "pinia";
+import { setActivePinia, storeToRefs } from "pinia";
 import { TabelStore } from "../../stores/index.store";
-import { Button, Select, Modal, Input } from "../../UI/UI";
+import { Button, Select, Modal, Input,TextArea } from "../../UI/UI";
 
 const store_tabel = TabelStore();
-const { isModal } = storeToRefs(store_tabel);
+const { isModal,model } = storeToRefs(store_tabel);
 
 // Statik optionlar (Select uchun)
 const roomOptions = [
@@ -15,10 +15,49 @@ const roomOptions = [
 ];
 
 const statusOptions = [
-  { label: "Bo'sh", value: "active" },
-  { label: "Band", value: "busy" },
-  { label: "Ta'mirda", value: "repair" }
+  { label: "Bo'sh", value: "0" },
+  { label: "Band", value: "1" },
+  { label: "Bron", value: "2" },
+  { label: "Ta'mirda", value: "-1" },
 ];
+
+
+
+
+// Komponentlar massivi (Validatsiya uchun)
+const formRefs = ref([]);
+
+const Save = async () => {
+  // 1. Barcha ref'larni aylanib chiqib, validate() ni chaqiramiz
+  // filter(v => v) - bo'sh ref'larni olib tashlaydi
+  const results = formRefs.value.map(refItem => refItem?.validate());
+  
+  // Agar birorta false bo'lsa, to'xtatamiz
+  if (results.includes(false)) {
+    // Xato bor joyga skrol qilish (UX uchun zo'r qo'shimcha)
+    const firstError = document.querySelector('.border-rose-500');
+    firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  try {
+    loading.value = true;
+    
+    // 2. API so'rovi
+    // await api.post('/tables', model.value);
+    
+    // Muvaffaqiyatli xabar (Toast/Notification)
+    console.log("Saqlandi!");
+    
+  } catch (err) {
+    // 3. Server validatsiyasi (Backend'dan kelgan xatolar)
+    if (err.response?.data?.errors) {
+      // Masalan: { number: ["Bu raqam band"] }
+    }
+  } finally {
+    loading.value = false;
+  }
+};
 </script>
 
 <template>
@@ -26,7 +65,6 @@ const statusOptions = [
     v-model="isModal"
     title="Yangi stol qo'shish"
     icon="fa-solid fa-plus-circle"
-    width="max-w-[450px]"
   >
     <div class="sticky top-[-24px] z-50 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 p-4 mb-6 -mx-2">
       <div class="flex items-center justify-between gap-4">
@@ -47,13 +85,23 @@ const statusOptions = [
       <div class="grid grid-cols-2 gap-4">
         <div class="flex flex-col gap-1.5">
           <Input 
+         :ref="el => formRefs[0] = el"
+          required
+          :error="!model.number && touched ? 'Stol raqamini kiriting' : false"
+         :rules="[v => !!v || 'Stol raqamini kiriting']"
+          v-model="model.number"
           clearable
           label="Stol raqami"
-            placeholder="Masalan: 12" 
+          placeholder="Masalan: 12" 
           />
         </div>
         <div class="flex flex-col gap-1.5">
           <Input 
+          :ref="el => formRefs[1] = el"
+            required
+           v-model="model.capacity"
+            :error="!model.number && touched ? 'Stol raqamini kiriting' : false"
+         :rules="[v => !!v || `Stol sig'imini kiriting`]"
            clearable
           label="Sig'imi (Kishi)"
             type="number" 
@@ -64,49 +112,56 @@ const statusOptions = [
       </div>
 
       <div class="flex flex-col gap-1.5">
-        <!-- <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Joylashgan joyi (Zal)</label> -->
         <Select 
+       :ref="el => formRefs[2] = el"
+       clearable
+        v-model="model.position"
         label="Joylashgan joyi (Zal)"
           :options="roomOptions" 
-          placeholder="Zalni tanlang..."
+          placeholder="Joylashuvni tanlang..."
           class="w-full"
+          required
+    :rules="[v => !!v || 'Iltimos, stolni joylashuvini tanlang']"
         />
       </div>
 
       <div class="flex flex-col gap-1.5">
         <!-- <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Dastlabki holati</label> -->
         <Select 
+       :ref="el => formRefs[3] = el"
+        v-model="model.status"
         label="Dastlabki holati"
           :options="statusOptions" 
           placeholder="Holatni tanlang..."
           class="w-full"
+          required
+          clearable
+    :rules="[v => !!v || 'Iltimos, holatni tanlang']"
         />
       </div>
 
       <div class="flex flex-col gap-1.5">
-        <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Stol haqida izoh (ixtiyoriy)</label>
-        <textarea 
-          placeholder="Deraza yonidagi stol..." 
-          class="w-full min-h-[80px] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-        ></textarea>
+       <TextArea 
+             :ref="el => formRefs[4] = el"
+
+  v-model="model.note"
+  clearable
+  label="Qo'shimcha ma'lumot"
+  placeholder="Batafsil yozing..."
+  counter
+  maxlength="500"
+  :rules="[v => v.length > 10 || 'Kamida 10 ta belgi yozing']"
+  required
+/>
       </div>
 
-      <div class="p-4 bg-indigo-50/50 dark:bg-indigo-500/5 rounded-2xl border border-indigo-100 dark:border-indigo-500/20">
-        <div class="flex items-start gap-3">
-          <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-white">
-            <i class="fa-solid fa-chair text-lg"></i>
-          </div>
-          <div>
-            <p class="text-xs font-black text-slate-700 dark:text-slate-200">Stol-12 (Asosiy Zal)</p>
-            <p class="text-[10px] text-slate-400 font-bold italic">4 kishilik, aktiv holatda yaratiladi</p>
-          </div>
-        </div>
-      </div>
+      
     </div>
 
     <template #footer>
       <div class="py-1 px-4 flex gap-2">
         <Button 
+        leftIcon="fa-solid fa-xmark"
         variant="danger"
         size="sm"
           @click="isModal = false"
@@ -114,7 +169,9 @@ const statusOptions = [
           Bekor qilish
         </Button>
         <Button 
+        @click="Save()"
         size="sm"
+        leftIcon="fas fa-check"
         >
           Saqlash
         </Button>

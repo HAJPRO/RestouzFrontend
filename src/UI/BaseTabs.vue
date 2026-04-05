@@ -1,17 +1,23 @@
 <template>
   <div class="inline-block select-none">
-    <Button 
-      icon="fas fa-filter"
-      size="sm"
-      @click="openDrawer"
-    
-    >
-      <span 
-        v-if="isSelected && !isOpen" 
-        class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse"
-      ></span>
-    </Button>
-
+   <div class="relative inline-flex">
+  <Button 
+    icon="fas fa-filter"
+    size="sm"
+    @click="openDrawer"
+    :class="isSelected ? 'text-red-500' : ''"
+  />
+  
+  <span 
+    v-if="isSelected && !isOpen" 
+    class="absolute -top-0.5 -right-0.5 flex h-3 w-3"
+  >
+    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+    <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600 border border-white dark:border-slate-900"></span>
+  </span>
+</div>
+     
+   
     <Teleport to="body">
       <transition name="drawer-fade">
         <div v-if="isOpen" class="fixed inset-0 z-[10000] flex items-end justify-center">

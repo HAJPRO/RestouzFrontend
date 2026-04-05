@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, useAttrs, useSlots } from 'vue';
+import { computed, ref, useAttrs, useSlots, watch } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 
@@ -15,7 +15,8 @@ const props = defineProps({
   label: { type: String, default: '' },
   placeholder: { type: String, default: '' },
   help: { type: String, default: '' },
-  error: { type: [String, Boolean], default: false },
+  error: { type: [String, Boolean], default: false }, // Tashqaridan keladigan xato
+  rules: { type: Array, default: () => [] },        // Validatsiya qoidalari: [v => !!v || 'Xato matni']
   success: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
   readonly: { type: Boolean, default: false },
@@ -37,6 +38,33 @@ const fileInputRef = ref(null);
 const isFocused = ref(false);
 const showPassword = ref(false);
 const fileName = ref('');
+
+// --- VALIDATION LOGIC ---
+const internalError = ref(false);
+
+const runValidation = (value) => {
+  if (props.rules && props.rules.length > 0) {
+    for (const rule of props.rules) {
+      const result = rule(value);
+      if (result !== true) {
+        internalError.value = result; // Xatolik matnini saqlash
+        return false;
+      }
+    }
+  }
+  internalError.value = false;
+  return true;
+};
+
+// Tashqaridan chaqirish uchun (masalan: inputRef.value.validate())
+const validate = () => runValidation(props.modelValue);
+
+// Xatolikni tozalash
+const resetValidation = () => {
+  internalError.value = false;
+};
+
+defineExpose({ validate, resetValidation });
 
 // --- SIZE CONFIGURATION ---
 const sizeConfig = computed(() => {
@@ -70,8 +98,8 @@ const wrapperClasses = computed(() => [
   'bg-white dark:bg-slate-950',
   sizeConfig.value.rounded,
   props.type === 'textarea' ? 'items-start min-h-[100px]' : 'items-center',
-  props.error ? 'border-rose-400 ring-rose-500/10' : 
-  props.success ? 'border-emerald-400 ring-emerald-500/10' : 
+  (props.error || internalError.value) ? 'border-rose-400 ring-4 ring-rose-500/10' : 
+  props.success ? 'border-emerald-400 ring-4 ring-emerald-500/10' : 
   isFocused.value ? 'border-indigo-500 ring-4 ring-indigo-500/10 shadow-indigo-100 dark:shadow-none' : 
   'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700',
   (props.disabled || props.loading) ? 'opacity-60 cursor-not-allowed bg-slate-50 dark:bg-slate-900/50' : ''
@@ -86,25 +114,42 @@ const labelClasses = computed(() => {
     'bg-white dark:bg-slate-800 px-1.5 rounded',
     (isFocused.value || hasContent.value || props.type === 'date')
       ? `-top-2.5 ${leftPadding} text-indigo-600 dark:text-indigo-400`
-      : `top-1/2 -translate-y-1/2 ${leftPadding} text-slate-400`
+      : `top-1/2 -translate-y-1/2 ${leftPadding} text-slate-400`,
+    (props.error || internalError.value) ? '!text-rose-500' : ''
   ];
 });
 
 // --- HANDLERS ---
-const handleInput = (e) => emit('update:modelValue', e.target.value);
+const handleInput = (e) => {
+  const value = e.target.value;
+  emit('update:modelValue', value);
+  // Agar xato bo'lsa, yozayotganda qayta tekshirib xatoni yo'qotadi
+  if (internalError.value) runValidation(value);
+};
+
+const handleBlur = (e) => {
+  isFocused.value = false;
+  runValidation(props.modelValue); // Chiqib ketganda tekshirish
+  emit('blur', e);
+};
+
 const handleFileChange = (e) => {
   const file = e.target.files[0];
   if (file) {
     fileName.value = file.name;
     emit('update:modelValue', file);
     emit('change', file);
+    runValidation(file);
   }
 };
+
 const triggerFile = () => !props.disabled && fileInputRef.value?.click();
+
 const clear = () => {
   emit('update:modelValue', '');
   fileName.value = '';
   if (fileInputRef.value) fileInputRef.value.value = '';
+  internalError.value = false;
   emit('clear');
 };
 </script>
@@ -123,7 +168,7 @@ const clear = () => {
         class="flex items-center justify-center shrink-0 transition-all duration-300 pl-4"
         :class="[
           sizeConfig.icon,
-          isFocused ? 'text-indigo-500 scale-110' : 'text-slate-400',
+          isFocused ? 'text-indigo-500 scale-110' : (internalError ? 'text-rose-400' : 'text-slate-400'),
           { 'pt-4': type === 'textarea' }
         ]"
       >
@@ -163,7 +208,7 @@ const clear = () => {
           v-bind="attrs"
           @input="handleInput"
           @focus="isFocused = true; emit('focus')"
-          @blur="isFocused = false; emit('blur')"
+          @blur="handleBlur"
           @keydown.enter="emit('enter')"
         />
 
@@ -172,7 +217,7 @@ const clear = () => {
             v-if="clearable && hasContent && !disabled && !loading"
             @click.stop="clear"
             type="button"
-            class="p-1 rounded-full text-slate-300 hover:text-rose-500 transition-colors"
+            class="absolute right-2 p-1 rounded-full text-slate-300 hover:text-rose-500 transition-colors"
           >
             <i class="fa-solid fa-circle-xmark text-sm"></i>
           </button>
@@ -193,7 +238,7 @@ const clear = () => {
 
         <span v-if="suffix" class="text-[10px] font-black text-slate-400 uppercase select-none">{{ suffix }}</span>
 
-        <i v-if="error && !loading" class="fa-solid fa-circle-exclamation text-rose-500 animate-pulse" :class="sizeConfig.icon"></i>
+        <i v-if="(error || internalError) && !loading" class="fa-solid fa-circle-exclamation text-rose-500 animate-pulse" :class="sizeConfig.icon"></i>
         <i v-if="success && !loading" class="fa-solid fa-circle-check text-emerald-500" :class="sizeConfig.icon"></i>
       </div>
 
@@ -202,8 +247,9 @@ const clear = () => {
 
     <div class="min-h-[20px] pt-1 px-2">
       <transition name="msg">
-        <p v-if="error" class="text-[10px] font-bold text-rose-500 flex items-center gap-1">
-          <span class="w-1 h-1 bg-rose-500 rounded-full"></span> {{ typeof error === 'string' ? error : 'Majburiy maydon' }}
+        <p v-if="error || internalError" class="text-[10px] font-bold text-rose-500 flex items-center gap-1">
+          <span class="w-1 h-1 bg-rose-500 rounded-full"></span> 
+          {{ typeof (error || internalError) === 'string' ? (error || internalError) : 'Majburiy maydon' }}
         </p>
         <p v-else-if="help" class="text-[10px] font-medium text-slate-400 italic">
           {{ help }}
@@ -215,7 +261,6 @@ const clear = () => {
 </template>
 
 <style scoped>
-/* Standart outline'larni butunlay o'chirish */
 input, textarea, button {
   outline: none !important;
   box-shadow: none !important;
@@ -227,14 +272,12 @@ input[type=number] { -moz-appearance: textfield; }
 
 input::placeholder { font-weight: 500; font-style: italic; opacity: 0.6; }
 
-/* Animatsiyalar */
 .msg-enter-active, .msg-leave-active { transition: all 0.3s ease; }
 .msg-enter-from, .msg-leave-to { opacity: 0; transform: translateX(-10px); }
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; transform: scale(0.8); }
 
-/* Autofill tozalash */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus {

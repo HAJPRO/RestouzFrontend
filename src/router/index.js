@@ -16,7 +16,7 @@ const routes = [
     component: ExploreView,
     children: [
       { path: '', redirect: '/home' }, // Root kelganda home ga yuborish
-      { path: 'home', name: 'home', component: () => import('../pages/explore/HomePage.vue') },
+      { path: 'home', name: 'home', component: () => import('../pages/explore/Home/index.vue') },
       { path: 'statistic', name: 'statistic', component: () => import('../pages/explore/Dashboard/sale/index.vue') },
       { path: 'menu', name: 'menu', component: () => import('../pages/explore/Menu/index.vue') },
       { path: 'tables', name: 'tables', component: () => import('../pages/explore/Tabels/index.vue') },
