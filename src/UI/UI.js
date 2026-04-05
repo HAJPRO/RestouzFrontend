@@ -16,5 +16,6 @@ export { default as Select } from './Select.vue';
 export { default as Table } from './Table.vue';
 export { default as Toast } from './Toast.vue';
 export { default as Upload } from './Upload.vue';
+export { default as GlobalRefresher } from './GlobalRefresher.vue';
 export { default as Header } from './Header.vue';
 export { default as EmptyState } from './EmptyState.vue';

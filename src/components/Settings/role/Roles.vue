@@ -37,9 +37,7 @@
     </ion-header>
 
     <ion-content :fullscreen="true">
-      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
-        <ion-refresher-content pulling-icon="chevron-down-outline" refreshing-spinner="crescent"></ion-refresher-content>
-      </ion-refresher>
+     <GlobalRefresher/>
 
      <div class="max-w-full mx-auto px-4 py-4 pb-20">
   
@@ -128,6 +126,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Input, EmptyState, Button } from '../../../UI/UI';
 import { RoleStore } from "../../../stores/index.store";
 import { storeToRefs } from 'pinia';
+import {GlobalRefresher} from '../../../UI/UI';
 
 const store = RoleStore();
 const { roles } = storeToRefs(store);

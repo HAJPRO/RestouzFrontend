@@ -24,6 +24,7 @@
   </Header>
 
     <ion-content :fullscreen="true">
+    <GlobalRefresher />
       <div class="max-w-full mx-auto px-5 py-6 pb-32">
         
         <div v-if="filteredTables.length > 0" class="grid grid-cols-2 gap-4">
@@ -94,7 +95,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { TabelStore } from "../../stores/index.store";
 import {  storeToRefs } from "pinia";
 
-import { Button, Input ,BaseTabs,Header} from "../../UI/UI";
+import { Button, Input ,BaseTabs,Header,GlobalRefresher} from "../../UI/UI";
 import Footer from '../../partials/Footer.vue';
 import Modal from '../../components/Tabel/ActionModal.vue';
 import CartModal from '../../components/Menu/Cart.vue';

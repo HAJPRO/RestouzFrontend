@@ -12,9 +12,11 @@
           icon="fas fa-list"
           size="sm"
         ></Button>
+       
       </template>
     </Header>
     <ion-content :fullscreen="true" class="ion-padding-bottom">
+    <GlobalRefresher />
       <div class="max-w-7xl mx-auto px-4 py-6">
         <div
           v-if="filteredFoods.length > 0"
@@ -226,8 +228,9 @@
 <div  v-if="isCartOpen"> <CartModal
       :items="cartItemsArray"
       :total="finalTotal"
-      @updateQty="handleCartUpdate"
-      @confirm="processOrder"
+  @updateQty="handleCartUpdate"
+  @removeItem="removeFromCart"
+  @close="isCartOpen = false"
    /></div>
     <Footer class="z-50" />
   </ion-page>
@@ -254,7 +257,7 @@ import {
   closeOutline,
 } from "ionicons/icons";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
-import { Input, Button, Header } from "../../UI/UI";
+import { Input, Button, Header,GlobalRefresher } from "../../UI/UI";
 import Footer from "../../partials/Footer.vue";
 import CartModal from "./Cart.vue";
 
@@ -305,9 +308,19 @@ const foods = ref([
 ]);
 
 // --- COMPUTED (HISOB-KITOB) ---
-const currentCategory = computed(() =>
-  categories.find((c) => c.id === activeCategory.value),
-);
+// Menu.vue ichida
+const handleCartUpdate = async ({ id, change }) => {
+  const currentQty = cart.value[id] || 0;
+  const newQty = currentQty + change;
+
+  if (newQty <= 0) {
+    delete cart.value[id];
+  } else {
+    cart.value[id] = newQty;
+  }
+};
+
+
 
 const filteredFoods = computed(() => {
   return foods.value.filter((f) => {
@@ -393,6 +406,7 @@ onUnmounted(() => {
   window.removeEventListener("cart:update-qty", syncUpdateQty);
   window.removeEventListener("cart:remove-item", syncRemoveItem);
 });
+
 </script>
 
 <style scoped>
