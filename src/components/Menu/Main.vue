@@ -1,7 +1,7 @@
 <template>
-  <Tabels />
+  <List />
 </template>
 <script setup>
-import Tabels from "./Tabels.vue";
+import List from "./List.vue";
 </script>
 
