@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import { setActivePinia, storeToRefs } from "pinia";
+import {  storeToRefs } from "pinia";
 import { TabelStore } from "../../stores/index.store";
 import { Button, Select, Modal, Input,TextArea } from "../../UI/UI";
 
@@ -26,28 +26,17 @@ const statusOptions = [
 
 // Komponentlar massivi (Validatsiya uchun)
 const formRefs = ref([]);
-
 const Save = async () => {
-  // 1. Barcha ref'larni aylanib chiqib, validate() ni chaqiramiz
-  // filter(v => v) - bo'sh ref'larni olib tashlaydi
   const results = formRefs.value.map(refItem => refItem?.validate());
-  
-  // Agar birorta false bo'lsa, to'xtatamiz
   if (results.includes(false)) {
-    // Xato bor joyga skrol qilish (UX uchun zo'r qo'shimcha)
     const firstError = document.querySelector('.border-rose-500');
     firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
-
   try {
-    loading.value = true;
     
-    // 2. API so'rovi
-    // await api.post('/tables', model.value);
-    
-    // Muvaffaqiyatli xabar (Toast/Notification)
-    console.log("Saqlandi!");
+  const data = await store_tabel.Create(model.value);
+    console.log("Yangi stol yaratildi:", data);
     
   } catch (err) {
     // 3. Server validatsiyasi (Backend'dan kelgan xatolar)
@@ -55,7 +44,6 @@ const Save = async () => {
       // Masalan: { number: ["Bu raqam band"] }
     }
   } finally {
-    loading.value = false;
   }
 };
 </script>

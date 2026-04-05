@@ -1,4 +1,5 @@
 <template>
+  <ion-page>
   <Modal 
         v-model="isCartOpen"
         title="Buyurtma Savati"
@@ -92,6 +93,7 @@
           </div>
         </template>
       </Modal>
+      </ion-page>
 </template>
 
 <script setup>

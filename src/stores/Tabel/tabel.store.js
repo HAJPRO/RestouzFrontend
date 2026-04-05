@@ -15,26 +15,39 @@ export const TabelStore = defineStore('TabelStore', {
       this.isModal = !this.isModal
       console.log("modal")
     },
-    async Create() {
-      // 1. Toast'ni aynan action ichida chaqiramiz
+    async Create(payload) {
       const { toast } = useToast();
-
       this.loading = true;
       try {
-        const response = await TabelService.Create();
-
-        // 2. Natijani tekshirish (Backend res.json({ message: "..." }) qaytaryapti)
-        // Odatda axios natijani response.data ichida qaytaradi
+        const response = await TabelService.Create(payload);
         const message = response?.data?.message || response?.data?.msg || "Muvaffaqiyatli!";
-
-        console.log("Server javobi:", response.data);
-
         // 3. Toast chiqarish
         toast.success(message);
-
         // Modalni yopish (ixtiyoriy)
         this.isModal = false;
 
+      } catch (error) {
+        console.error("Xatolik:", error);
+
+        // Xato xabarini ham toast orqali ko'rsatish
+        const errorMsg = error.response?.data?.message || "Xatolik yuz berdi";
+        toast.error(errorMsg);
+      } finally {
+        this.loading = false;
+        this.GetAll()
+
+      }
+    },
+     async GetAll(payload) {
+      const { toast } = useToast();
+      this.loading = true;
+      try {
+        const response = await TabelService.GetAll(payload);
+        this.tabels = response.data.data.data; // Olingan ma'lumotlarni state'ga saqlaymiz
+        const message = response?.data?.message || response?.data?.msg || "Muvaffaqiyatli!";
+        // toast.success(message);
+        // Modalni yopish (ixtiyoriy)
+        this.isModal = false;
       } catch (error) {
         console.error("Xatolik:", error);
 

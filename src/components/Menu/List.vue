@@ -1,6 +1,5 @@
 <template>
   <ion-page class="bg-slate-50 dark:bg-[#020617]">
- 
     <Header
       title="Menyu"
       searchable
@@ -15,7 +14,6 @@
         ></Button>
       </template>
     </Header>
-
     <ion-content :fullscreen="true" class="ion-padding-bottom">
       <div class="max-w-7xl mx-auto px-4 py-6">
         <div
@@ -225,15 +223,15 @@
         </div>
       </div>
     </ion-modal>
-
-    <Footer class="z-50" />
-  </ion-page>
-  <div  v-if="isCartOpen"> <CartModal
+<div  v-if="isCartOpen"> <CartModal
       :items="cartItemsArray"
       :total="finalTotal"
       @updateQty="handleCartUpdate"
       @confirm="processOrder"
    /></div>
+    <Footer class="z-50" />
+  </ion-page>
+  
   
 </template>
 
