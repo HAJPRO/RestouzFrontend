@@ -18,6 +18,8 @@ const statusOptions = [
   { label: "Bo'sh", value: "0" },
   { label: "Band", value: "1" },
   { label: "Bron", value: "2" },
+  { label: "Bron", value: "2" },
+  { label: "Hisob kutilmoqda", value: "3" },
   { label: "Ta'mirda", value: "-1" },
 ];
 

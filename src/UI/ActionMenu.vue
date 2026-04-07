@@ -2,44 +2,45 @@
 import { ref, computed, nextTick, onBeforeUnmount, onMounted } from 'vue';
 
 const props = defineProps({
-  items: {
-    type: Array,
-    required: true,
-   
-  },
-  title: {
-    type: String,
-    default: 'Amallar'
-  }
+  items: { type: Array, required: true },
+  title: { type: String, default: 'Amallar' }
 });
 
 const isOpen = ref(false);
 const triggerRef = ref(null);
 const menuRef = ref(null);
+const isMobile = ref(false);
 const menuStyles = ref({ top: '0px', left: '0px', transformOrigin: 'top right' });
+
+// Ekran hajmini tekshirish
+const checkScreen = () => {
+  isMobile.value = window.innerWidth < 768;
+};
 
 const visibleItems = computed(() => props.items.filter(item => item.show !== false));
 
 const calculatePosition = async () => {
-  if (!triggerRef.value) return;
+  if (!triggerRef.value || isMobile.value) return;
 
   const rect = triggerRef.value.getBoundingClientRect();
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   
   await nextTick();
-  const menuRect = menuRef.value ? menuRef.value.getBoundingClientRect() : { width: 240, height: 200 };
+  const menuRect = menuRef.value ? menuRef.value.getBoundingClientRect() : { width: 256, height: 200 };
 
-  let top = rect.bottom + window.scrollY + 10;
+  let top = rect.bottom + 10;
   let left = rect.left + rect.width - menuRect.width;
   let originY = 'top';
   let originX = 'right';
 
-  if (rect.bottom + menuRect.height > viewportHeight) {
-    top = rect.top + window.scrollY - menuRect.height - 10;
+  // Pastga sig'masa, tepaga chiqarish
+  if (top + menuRect.height > viewportHeight) {
+    top = rect.top - menuRect.height - 10;
     originY = 'bottom';
   }
 
+  // Chapga chiqib ketsa
   if (left < 10) {
     left = 10;
     originX = 'left';
@@ -56,11 +57,18 @@ const toggleMenu = async () => {
   isOpen.value = !isOpen.value;
   if (isOpen.value) {
     await nextTick();
-    calculatePosition();
+    if (!isMobile.value) calculatePosition();
     setupEventListeners();
+    document.body.style.overflow = 'hidden'; // Scrollni bloklash
   } else {
-    removeEventListeners();
+    closeMenu();
   }
+};
+
+const closeMenu = () => {
+  isOpen.value = false;
+  removeEventListeners();
+  document.body.style.overflow = '';
 };
 
 const handleAction = (item) => {
@@ -68,37 +76,31 @@ const handleAction = (item) => {
   closeMenu();
 };
 
-const closeMenu = () => {
-  isOpen.value = false;
-  removeEventListeners();
-};
-
 const handleKeyDown = (e) => {
   if (e.key === 'Escape') closeMenu();
 };
 
 const setupEventListeners = () => {
-  window.addEventListener('scroll', calculatePosition, true);
-  window.addEventListener('resize', calculatePosition);
+  window.addEventListener('resize', () => {
+    checkScreen();
+    calculatePosition();
+  });
   window.addEventListener('keydown', handleKeyDown);
 };
 
 const removeEventListeners = () => {
-  window.removeEventListener('scroll', calculatePosition, true);
-  window.removeEventListener('resize', calculatePosition);
+  window.removeEventListener('resize', checkScreen);
   window.removeEventListener('keydown', handleKeyDown);
 };
 
-const handleClickOutside = (event) => {
-  if (isOpen.value && triggerRef.value && !triggerRef.value.contains(event.target) && !menuRef.value?.contains(event.target)) {
-    closeMenu();
-  }
-};
+onMounted(() => {
+  checkScreen();
+  window.addEventListener('resize', checkScreen);
+});
 
-onMounted(() => window.addEventListener('mousedown', handleClickOutside));
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', checkScreen);
   removeEventListeners();
-  window.removeEventListener('mousedown', handleClickOutside);
 });
 </script>
 
@@ -109,60 +111,72 @@ onBeforeUnmount(() => {
       @click.stop="toggleMenu"
       type="button"
       :class="[
-        'group relative w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-300',
+        'w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 active:scale-90',
         isOpen 
-          ? 'bg-slate-900 text-white shadow-xl scale-95 dark:bg-white dark:text-slate-900' 
-          : 'bg-white text-slate-500 border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400'
+          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' 
+          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400'
       ]"
     >
-      <i :class="['fa-solid fa-ellipsis text-lg transition-transform duration-300', isOpen ? 'rotate-90' : '']"></i>
+      <i :class="['fa-solid fa-ellipsis-vertical text-lg transition-transform', isOpen ? 'rotate-90' : '']"></i>
     </button>
 
     <Teleport to="body">
-      <Transition name="premium-dropdown">
+      <Transition name="fade">
+        <div v-if="isOpen" @click="closeMenu" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9998]"></div>
+      </Transition>
+
+      <Transition :name="isMobile ? 'slide-up' : 'premium-dropdown'">
         <div
           v-if="isOpen"
           ref="menuRef"
-          :style="menuStyles"
-          class="fixed z-[9999] w-64 overflow-hidden bg-white/80 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[1.5rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border border-white/40 dark:border-slate-800/50 p-2"
+          :style="!isMobile ? menuStyles : {}"
+          :class="[
+            'fixed z-[9999] overflow-hidden bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800',
+            isMobile 
+              ? 'inset-x-0 bottom-0 rounded-t-[2.5rem] p-6 pb-10' 
+              : 'w-72 rounded-3xl p-2'
+          ]"
         >
-          <div class="px-4 py-3 mb-1">
-            <h4 class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-              {{ title }}
-            </h4>
+          <div v-if="isMobile" class="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-6"></div>
+
+          <div class="px-4 py-2 mb-2 flex justify-between items-center">
+            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ title }}</h4>
+            <button v-if="isMobile" @click="closeMenu" class="text-slate-400 hover:text-slate-600">
+               <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
           </div>
 
-          <div class="space-y-1">
+          <div class="grid gap-2">
             <button
               v-for="(item, index) in visibleItems"
               :key="index"
               @click.stop="handleAction(item)"
-              class="w-full group flex items-start gap-3.5 px-3 py-2.5 rounded-[1rem] transition-all duration-200 text-left"
+              class="w-full group flex items-center gap-4 p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] text-left"
               :class="[
                 item.variant === 'danger'
                   ? 'hover:bg-red-50 dark:hover:bg-red-950/30'
-                  : 'hover:bg-slate-100/80 dark:hover:bg-slate-800/80'
+                  : 'hover:bg-slate-50 dark:hover:bg-slate-800'
               ]"
             >
               <div 
-                class="mt-0.5 w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-110"
+                class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors"
                 :class="[
                   item.variant === 'danger'
-                    ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'
-                    : 'bg-slate-100 text-slate-500 group-hover:bg-white group-hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-slate-700'
+                    ? 'bg-red-100 text-red-600 dark:bg-red-900/40'
+                    : 'bg-slate-100 text-slate-500 group-hover:bg-white group-hover:text-indigo-600 dark:bg-slate-800'
                 ]"
               >
-                <i :class="[item.icon, 'text-base']"></i>
+                <i :class="[item.icon, 'text-lg']"></i>
               </div>
 
-              <div class="flex flex-col min-w-0 pt-0.5">
+              <div class="flex flex-col min-w-0">
                 <span :class="[
-                  'text-sm font-semibold tracking-tight leading-none mb-1',
-                  item.variant === 'danger' ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white'
+                  'text-[15px] font-bold leading-tight',
+                  item.variant === 'danger' ? 'text-red-600' : 'text-slate-700 dark:text-slate-200'
                 ]">
                   {{ item.label }}
                 </span>
-                <span v-if="item.description" class="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">
+                <span v-if="item.description" class="text-xs text-slate-400 dark:text-slate-500 truncate">
                   {{ item.description }}
                 </span>
               </div>
@@ -175,29 +189,26 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.premium-dropdown-enter-active {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
+/* Desktop Animation */
+.premium-dropdown-enter-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.premium-dropdown-leave-active { transition: all 0.2s ease-in; }
+.premium-dropdown-enter-from { opacity: 0; transform: scale(0.8) translateY(-10px); }
+.premium-dropdown-leave-to { opacity: 0; transform: scale(0.95); }
 
-.premium-dropdown-leave-active {
-  transition: all 0.2s cubic-bezier(0.7, 0, 0.84, 0);
-}
+/* Mobile Bottom Sheet Animation */
+.slide-up-enter-active, .slide-up-leave-active { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
+.slide-up-enter-from { transform: translateY(100%); }
+.slide-up-leave-to { transform: translateY(100%); }
 
-.premium-dropdown-enter-from {
-  opacity: 0;
-  transform: scale(0.92) translateY(10px);
-}
+/* Background Fade */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-.premium-dropdown-leave-to {
-  opacity: 0;
-  transform: scale(0.96);
-}
-
-/* Glassmorphism uchun qo'shimcha border effekti */
-.fixed {
-  box-shadow: 
-    0 0 0 1px rgba(0, 0, 0, 0.05),
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+/* Responsive Adjustments */
+@media (max-width: 767px) {
+  .fixed {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
 }
 </style>
