@@ -1,12 +1,12 @@
 <template>
-  <ion-page class="bg-slate-50 dark:bg-slate-950">
+  <ion-page class="bg-[#f8fafc] dark:bg-[#020617]">
     <Modal />
     
     <Header 
       title="Stollar" 
       searchable 
       v-model="searchQuery"
-      searchPlaceholder="Stol raqami orqali izlash..."
+      searchPlaceholder="Izlash..."
     >
       <template #actions>
         <BaseTabs 
@@ -19,7 +19,7 @@
           @click="store.ModalAction()" 
           icon="fas fa-plus" 
           size="sm" 
-          class="!bg-indigo-600 !text-white shadow-lg shadow-indigo-500/20" 
+          class="!bg-indigo-600 !text-white shadow-lg shadow-indigo-500/20 rounded-xl" 
         />
       </template>
     </Header>
@@ -27,110 +27,101 @@
     <ion-content :fullscreen="true">
       <GlobalRefresher />
       
-      <div class="max-w-full mx-auto px-5 py-6 pb-32">
-        <div v-if="filteredTables.length > 0" class="grid grid-cols-2 gap-4">
+      <div class="max-w-[1600px] mx-auto px-4 py-8 pb-32">
+        <div v-if="filteredTables.length > 0" 
+             class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+          
           <div 
             v-for="table in filteredTables" 
             :key="table.id"
             @click="handleTableClick(table)"
             :class="[
-              'group relative bg-white dark:bg-slate-900 rounded-[35px] p-5 border transition-all duration-500 active:scale-95 shadow-sm overflow-hidden cursor-pointer',
-              table.status === '0' ? 'border-slate-100 dark:border-white/5' : 'border-indigo-500/20 ring-1 ring-indigo-500/5'
+              'group relative flex flex-col justify-between p-5 min-h-[210px] rounded-[32px] transition-all duration-500 cursor-pointer active:scale-95 overflow-hidden border-2',
+              getStatusTheme(table).bgClass,
+              getStatusTheme(table).borderClass
             ]"
           >
-            <div :class="['absolute top-0 left-0 w-full h-1.5 transition-colors duration-500', getStatusColor(table.status).line]"></div>
+            <div :class="['absolute -top-8 -right-8 w-20 h-20 rounded-full opacity-[0.08] transition-transform duration-700 group-hover:scale-150', getStatusTheme(table).dot]"></div>
 
-            <div class="flex justify-between items-start mb-5">
-              <div class="space-y-0.5">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Stol</span>
-                <div class="flex items-center gap-2">
-                  <h3 class="text-xl font-black text-slate-900 dark:text-white tracking-tighter">{{ table.number }}</h3>
-                  
-                  <ActionMenu 
-                    :items="getTableActions(table)" 
-                    :title="`Stol #${table.number}`"
-                    @click.stop 
-                  />
-                </div>
+            <div class="flex justify-between items-start z-10">
+              <div class="flex flex-col">
+                <span class="text-[10px] font-bold opacity-40 uppercase tracking-[2px] mb-0.5">{{table.position}}</span>
+                <h3 :class="['text-lg font-black tracking-tighter leading-none', getStatusTheme(table).text]">
+                  {{ table.number }}
+                </h3>
               </div>
               
-              <div :class="['w-10 h-10 rounded-2xl flex items-center justify-center shadow-inner transition-all duration-300', getStatusColor(table.status).iconBg]">
-                <ion-icon :icon="getStatusIcon(table.status)" class="text-lg" />
+              <div v-if="getActiveBookingsCount(table) > 0" class="group/tooltip relative">
+                <div class="flex items-center gap-1.5 px-2.5 py-1 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-full border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:border-indigo-400">
+                  <i class="fa-solid fa-calendar-check text-[10px] text-indigo-500"></i>
+                  <span class="text-[11px] font-black text-slate-700 dark:text-slate-200">{{ getActiveBookingsCount(table) }}</span>
+                </div>
+                
+                <div class="absolute top-full right-0 mt-2 w-48 hidden group-hover/tooltip:block z-[100] animate-in fade-in slide-in-from-top-2 ">
+                  <div class="bg-white dark:bg-slate-800 shadow-2xl rounded-2xl p-2 border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="text-[9px] font-bold text-indigo-500 uppercase mb-2 px-2 border-b border-slate-50 dark:border-slate-700/50 pb-1">Navbatdagi bronlar</div>
+                    <div class="max-h-32 overflow-y-auto custom-scrollbar">
+                      <div v-for="b in table.bookings" :key="b._id" class="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors">
+                        <span class="text-[10px] font-bold text-slate-700 dark:text-slate-200 truncate pr-2">{{ b.client_name || 'Mijoz' }}</span>
+                        <span class="text-[9px] font-black opacity-50">{{ new Date(b.booking_time).getHours() }}:{{ String(new Date(b.booking_time).getMinutes()).padStart(2, '0') }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="min-h-[65px] flex flex-col justify-end">
+            <div class="flex flex-col items-center justify-center my-2 z-10">
+              <div v-if="getActiveBookingTimer(table)" class="flex flex-col items-center">
+                <div class="text-[9px] font-black uppercase text-rose-500 tracking-widest mb-1 animate-pulse">Bron kelmoqda</div>
+                <div class="text-2xl font-black font-mono tracking-tighter text-rose-600 dark:text-rose-400">
+                  {{ getActiveBookingTimer(table) }}
+                </div>
+              </div>
               
-              <div v-if="['1', '3'].includes(table.status)" class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-lg">
-                    <ion-icon :icon="timeOutline" class="text-[11px] text-slate-400" />
-                    <span class="text-[11px] font-bold text-slate-500">{{ table.timer || '00:00' }}</span>
-                  </div>
-                  <span :class="['text-[10px] font-black uppercase tracking-wider', getStatusColor(table.status).text]">
-                    {{ getStatusLabel(table.status) }}
-                  </span>
-                </div>
-                <div :class="['text-[17px] font-black flex items-baseline gap-1', getStatusColor(table.status).text]">
-                  {{ table.total ? table.total.toLocaleString() : '0' }}
-                  <span class="text-[9px] font-medium opacity-60 uppercase">uzs</span>
+              <div v-else :class="['w-16 h-16 rounded-[24px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm', getStatusTheme(table).iconBox]">
+                <ion-icon :icon="getStatusIcon(table.status)" class="text-2xl" />
+              </div>
+            </div>
+
+            <div class="flex items-end justify-between z-10">
+              <div v-if="['1', '3'].includes(table.status)">
+                <p class="text-[9px] font-bold opacity-40 uppercase leading-none mb-1.5">Jami hisob</p>
+                <div :class="['text-base font-black tracking-tight', getStatusTheme(table).text]">
+                  {{ table.total?.toLocaleString() }} <span class="text-[10px] font-medium opacity-60">UZS</span>
                 </div>
               </div>
-
-              <div v-else-if="table.status === '0'" class="flex items-center justify-between border-t border-slate-50 dark:border-slate-800/50 pt-3">
-                <div class="flex items-center gap-2">
-                  <div class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </div>
-                  <span class="text-[11px] font-black uppercase text-emerald-500 tracking-tight">Bo'sh</span>
-                </div>
-                <div class="flex items-center gap-1 text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-md">
-                  <i class="fa-solid fa-user-group text-[9px]"></i>
-                  <span class="text-[10px] font-bold">{{ table.capacity || 4 }}</span>
-                </div>
+              <div v-else class="flex items-center gap-2 text-slate-400 dark:text-slate-500">
+                <i class="fa-solid fa-users text-[11px]"></i>
+                <span class="text-[11px] font-bold">{{ table.capacity || 4 }} kishilik</span>
               </div>
 
-              <div v-else class="flex flex-col gap-1 border-t border-slate-50 dark:border-slate-800/50 pt-3">
-                <div class="flex items-center gap-2">
-                  <div :class="['w-2 h-2 rounded-full', table.status === '2' ? 'bg-blue-500' : 'bg-slate-400']"></div>
-                  <span :class="['text-[11px] font-black uppercase tracking-tight', getStatusColor(table.status).text]">
-                    {{ getStatusLabel(table.status) }}
-                  </span>
-                </div>
-                <p v-if="table.status === '2'" class="text-[10px] text-slate-400 font-medium truncate italic">
-                   Rezerv: {{ table.reserve_time || 'Bugun 19:00' }}
-                </p>
-                <p v-else class="text-[10px] text-slate-400 font-medium">Vaqtinchalik yopiq</p>
-              </div>
-
+              <ActionMenu 
+                :items="getTableActions(table)" 
+                @click.stop 
+                class="opacity-30 hover:opacity-100 transition-opacity p-1"
+              />
             </div>
           </div>
         </div>
 
-        <div v-else class="flex flex-col items-center justify-center py-24 text-center">
-          <div class="w-20 h-20 bg-white dark:bg-slate-900 rounded-[30px] shadow-sm flex items-center justify-center text-slate-200 mb-5 border border-slate-100 dark:border-slate-800">
-            <ion-icon :icon="pulseOutline" class="text-4xl" />
-          </div>
-          <h3 class="text-slate-800 dark:text-white font-bold text-lg">Ma'lumot mavjud emas</h3>
-          <p class="text-sm text-slate-400 mt-1 max-w-[200px]">Ushbu kategoriya bo'yicha stollar topilmadi</p>
+        <div v-else class="flex flex-col items-center justify-center py-40 text-center opacity-40">
+          <ion-icon :icon="pulseOutline" class="text-6xl mb-4" />
+          <h3 class="text-lg font-bold">Hech narsa topilmadi</h3>
         </div>
       </div>
     </ion-content>
 
     <div v-if="isCartOpen && selectedTable && ['1', '3'].includes(selectedTable.status)"> 
-      <CartModal
-        :tableInfo="selectedTable"
-        @close="isCartOpen = false"
-      />
+      <CartModal :tableInfo="selectedTable" @close="isCartOpen = false" />
     </div>
-
+    <TableBookingModal />
     <Footer />
   </ion-page>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { IonPage, IonContent, IonIcon } from '@ionic/vue';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -141,6 +132,7 @@ import { Button, BaseTabs, Header, GlobalRefresher, ActionMenu } from "../../UI/
 import Footer from '../../partials/Footer.vue';
 import Modal from '../../components/Tabel/ActionModal.vue';
 import CartModal from '../../components/Menu/Cart.vue';
+import TableBookingModal from './TableBookingModal.vue';
 
 import { 
   timeOutline, pulseOutline, addOutline, cartOutline, 
@@ -155,75 +147,134 @@ const searchQuery = ref("");
 const activeStatus = ref('all');
 const isCartOpen = ref(false);
 const selectedTable = ref(null);
+const now = ref(new Date());
 
-const statusFilters = [
-  { id: 'all', label: 'Barchasi', icon: 'fas fa-border-all' },
-  { id: '0',   label: 'Bo\'sh', icon: 'fas fa-check-circle' },
-  { id: '1',   label: 'Band', icon: 'fas fa-user-clock' },
-  { id: '2',   label: 'Bron', icon: 'fas fa-bookmark' },
-  { id: '3',   label: 'Hisob', icon: 'fas fa-money-bill-wave' },
-  { id: '-1',  label: 'Ta\'mir', icon: 'fas fa-tools' }
-];
+let liveInterval = null;
+onMounted(() => {
+  store.GetAll();
+  liveInterval = setInterval(() => { now.value = new Date(); }, 1000);
+});
 
-// --- STATUS LOGIKASI ---
-const getStatusLabel = (s) => {
-  const labels = { '0': 'Bo\'sh', '1': 'Band', '2': 'Bron', '3': 'Hisob kutilmoqda', '-1': 'Ta\'mirda' };
-  return labels[s] || 'Noma\'lum';
+onUnmounted(() => { if (liveInterval) clearInterval(liveInterval); });
+
+// --- SMART LOGIC ---
+
+const getActiveBookingsCount = (table) => {
+  if (!table.bookings || !Array.isArray(table.bookings)) return 0;
+  return table.bookings.filter(b => new Date(b.booking_time) > now.value).length;
 };
 
-const getStatusColor = (s) => {
+const getActiveBookingTimer = (table) => {
+  if (!table.bookings || !table.bookings.length) return null;
+  const closest = table.bookings
+    .map(b => ({
+      time: new Date(b.booking_time),
+      diff: new Date(b.booking_time).getTime() - now.value.getTime()
+    }))
+    .filter(b => b.diff > 0 && b.diff <= 3600000)
+    .sort((a, b) => a.diff - b.diff)[0];
+
+  if (closest) {
+    const min = Math.floor(closest.diff / 60000);
+    const sec = Math.floor((closest.diff % 60000) / 1000);
+    return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+  }
+  return null;
+};
+
+const getStatusTheme = (table) => {
+  const s = table.status;
+  if (getActiveBookingTimer(table)) {
+    return { 
+      bgClass: 'bg-rose-50/50 dark:bg-rose-950/10', 
+      borderClass: 'border-rose-100 dark:border-rose-900 ring-4 ring-rose-500/5',
+      text: 'text-rose-600 dark:text-rose-400',
+      iconBox: 'bg-rose-100 dark:bg-rose-900/40 text-rose-600',
+      dot: 'bg-rose-500'
+    };
+  }
+
   const themes = {
-    '0':  { line: 'bg-emerald-500', iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10', text: 'text-emerald-500' },
-    '1':  { line: 'bg-rose-500',    iconBg: 'bg-rose-50 text-rose-600 dark:bg-rose-500/10',       text: 'text-rose-500' },
-    '2':  { line: 'bg-blue-500',    iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-500/10',       text: 'text-blue-500' },
-    '3':  { line: 'bg-amber-500',   iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-500/10',    text: 'text-amber-500' },
-    '-1': { line: 'bg-slate-400',   iconBg: 'bg-slate-100 text-slate-500 dark:bg-slate-800',     text: 'text-slate-400' }
+    '0': { 
+      bgClass: 'bg-white dark:bg-slate-900', 
+      borderClass: 'border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5',
+      text: 'text-slate-900 dark:text-white',
+      iconBox: 'bg-slate-50 dark:bg-slate-800 text-slate-400',
+      dot: 'bg-emerald-500'
+    },
+    '1': { 
+      bgClass: 'bg-rose-50/20 dark:bg-rose-950/5', 
+      borderClass: 'border-rose-100 dark:border-rose-900/40',
+      text: 'text-rose-600 dark:text-rose-400',
+      iconBox: 'bg-rose-100/50 dark:bg-rose-900/30 text-rose-500',
+      dot: 'bg-rose-500'
+    },
+    '2': { 
+      bgClass: 'bg-indigo-50/20 dark:bg-indigo-950/5', 
+      borderClass: 'border-indigo-100 dark:border-indigo-900/40',
+      text: 'text-indigo-600 dark:text-indigo-400',
+      iconBox: 'bg-indigo-100/50 dark:bg-indigo-900/30 text-indigo-500',
+      dot: 'bg-indigo-500'
+    },
+    '3': { 
+      bgClass: 'bg-amber-50/20 dark:bg-amber-950/5', 
+      borderClass: 'border-amber-100 dark:border-amber-900/40',
+      text: 'text-amber-600 dark:text-amber-400',
+      iconBox: 'bg-amber-100/50 dark:bg-amber-900/30 text-amber-500',
+      dot: 'bg-amber-500'
+    }
   };
   return themes[s] || themes['0'];
 };
 
 const getStatusIcon = (s) => {
   const icons = { '0': addOutline, '1': cartOutline, '2': bookmarkOutline, '3': walletOutline, '-1': constructOutline };
-  return icons[s] || cartOutline;
+  return icons[s] || addOutline;
 };
 
-// --- AMALLAR ---
 const handleTableClick = async (table) => {
-  await Haptics.impact({ style: ImpactStyle.Medium });
+  await Haptics.impact({ style: ImpactStyle.Light });
   selectedTable.value = table;
-
-  if (table.status === '0') {
-    router.push({ name: 'menu' });
-  } else if (['1', '3'].includes(table.status)) {
-    isCartOpen.value = true;
-  }
+  if (table.status === '0') router.push({ name: 'menu' });
+  else if (['1', '3'].includes(table.status)) isCartOpen.value = true;
 };
 
 const getTableActions = (table) => [
   { label: 'Tahrirlash', icon: 'fa-solid fa-pen-to-square', onClick: () => store.ModalAction(table) },
-  { label: 'Batafsil', icon: 'fa-solid fa-eye', onClick: () => router.push(`/tables/${table.id}`) },
-  { label: 'O\'chirish', icon: 'fa-solid fa-trash', variant: 'danger', onClick: () => console.log('Delete', table.id) }
+  { label: 'Hisob berish', icon: 'fa-solid fa-calculator', onClick: () => store.BookingModalAction(table, 'booked') },
+
+  { label: 'Bron qo\'shish', icon: 'fa-solid fa-calendar-plus', onClick: () => store.BookingModalAction(table, 'booked') },
+  { label: 'Ta’mirga olish', icon: 'fa-solid fa-screwdriver-wrench', onClick: () => store.setStatus(table, 'maintenance') },
+  { label: 'Bekor qilish', icon: 'fa-solid fa-xmark', variant: 'warning', onClick: () => store.setStatus(table, 'free') },
+  { label: 'O\'chirish', icon: 'fa-solid fa-trash', variant: 'danger', onClick: () => {} }
 ];
 
 const filteredTables = computed(() => {
   if (!tabels.value) return [];
   return tabels.value.filter(t => {
     const matchStatus = activeStatus.value === 'all' || t.status === activeStatus.value;
-    const matchSearch = String(t.number).includes(searchQuery.value);
+    const matchSearch = String(t.number).toLowerCase().includes(searchQuery.value.toLowerCase());
     return matchStatus && matchSearch;
   });
 });
 
+const statusFilters = [
+  { id: 'all', label: 'Barchasi', icon: 'fas fa-th-large' },
+  { id: '0', label: 'Bo\'sh', icon: 'fas fa-door-open' },
+  { id: '1', label: 'Band', icon: 'fas fa-user-clock' },
+  { id: '2', label: 'Bron', icon: 'fas fa-bookmark' }
+];
+
 const onCategoryChange = (id) => {
   activeStatus.value = id;
-  Haptics.impact({ style: ImpactStyle.Light });
+  Haptics.impact({ style: ImpactStyle.Medium });
 };
-
-onMounted(() => store.GetAll());
 </script>
 
 <style scoped>
 ion-content { --padding-bottom: 120px; }
-.animate-ping { animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
-@keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+.custom-scrollbar::-webkit-scrollbar { width: 3px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+.animate-in { animation: fadeIn 0.3s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>

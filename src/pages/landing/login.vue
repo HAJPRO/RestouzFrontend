@@ -6,49 +6,63 @@
         <ion-refresher-content refreshing-spinner="crescent"></ion-refresher-content>
       </ion-refresher>
 
-      <div class="absolute top-0 left-0 right-0 px-6 z-[100] flex justify-between items-center pt-safe h-24 bg-transparent transition-colors duration-500">
+      <div class="flex flex-col items-center justify-center min-h-full py-8 px-6">
+        
+       
+
+        <ion-popover trigger="lang-trigger" trigger-action="click" dismiss-on-select="true" mode="ios" class="language-popover">
+           <div class="p-2 bg-white/95 dark:bg-[#020617]/95 backdrop-blur-3xl border border-slate-200 dark:border-white/10 rounded-[22px] shadow-3xl space-y-1">
+            <button v-for="lang in languages" :key="lang.code" @click="setLanguage(lang.code)"
+              :class="currentLang === lang.code ? 'bg-indigo-600/10 border-indigo-500/30' : 'border-transparent'"
+              class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl border transition-all"
+            >
+              <img :src="lang.flag" class="w-5 h-5 rounded-full object-cover" />
+              <span class="text-xs font-bold dark:text-white">{{ lang.label }}</span>
+            </button>
+          </div>
+        </ion-popover>
+
+        <div class="w-full max-w-sm space-y-4 animate-slide-up border border-slate-200 dark:border-white/10 rounded-[28px] p-7 bg-white/10 dark:bg-white/5 backdrop-blur-2xl shadow-2xl">
+         <div class="absolute top-0 left-0 right-0 px-6 z-[100] flex justify-between items-center pt-safe h-20 bg-transparent">
   
   <div class="flex items-center">
     <button 
       id="lang-trigger"
-      class="flex items-center space-x-3 px-4 py-2.5 rounded-2xl 
+      class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl 
              bg-white/10 dark:bg-white/5 
-             backdrop-blur-2xl border 
-             border-slate-200 dark:border-white/10 
-             shadow-xl dark:shadow-2xl 
+             backdrop-blur-md border border-white/20 dark:border-white/10 
+             shadow-lg shadow-black/5
              active:scale-95 transition-all duration-300 group"
     >
-      <div class="w-5 h-5 rounded-full overflow-hidden border border-slate-300 dark:border-white/20 shadow-inner flex-shrink-0">
-        <img :src="getSelectedFlag(currentLang)" class="w-full h-full object-cover" />
+      <div class="w-5 h-5 rounded-full overflow-hidden border border-white/30 shadow-sm flex-shrink-0">
+        <img :src="getSelectedFlag(currentLang)" class="w-full h-full object-cover scale-110" />
       </div>
       
-     
-      
-      <ion-icon :icon="chevronDownOutline" class="text-[10px] text-slate-400 dark:text-slate-500 group-hover:translate-y-0.5 transition-transform"></ion-icon>
+      <ion-icon 
+        :icon="chevronDownOutline" 
+        class="text-[12px] text-slate-500 dark:text-slate-400 group-hover:translate-y-0.5 transition-transform duration-300"
+      ></ion-icon>
     </button>
 
     <ion-popover trigger="lang-trigger" trigger-action="click" dismiss-on-select="true" mode="ios" class="language-popover">
-      <div class="p-2 bg-white/95 dark:bg-[#020617]/95 backdrop-blur-3xl border border-slate-200 dark:border-white/10 rounded-[22px] shadow-3xl space-y-1">
+      <div class="p-2 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl border border-white/20 rounded-[24px] shadow-2xl space-y-1">
         <button 
           v-for="lang in languages" 
           :key="lang.code"
           @click="setLanguage(lang.code)"
           :class="currentLang === lang.code 
-            ? 'bg-indigo-50 dark:bg-indigo-600/20 border-indigo-200 dark:border-indigo-500/30' 
-            : 'hover:bg-slate-50 dark:hover:bg-white/5 border-transparent'"
-          class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl border transition-all duration-200"
+            ? 'bg-blue-600 dark:bg-blue-600 shadow-md shadow-blue-500/20' 
+            : 'hover:bg-slate-100 dark:hover:bg-white/5'"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200"
         >
-          <div class="w-6 h-6 rounded-full overflow-hidden border border-slate-200 dark:border-white/10 shadow-md flex-shrink-0">
-            <img :src="lang.flag" class="w-full h-full object-cover" />
-          </div>
-          <div class="flex flex-col items-start flex-grow">
-            <span :class="currentLang === lang.code ? 'text-indigo-600 dark:text-white' : 'text-slate-600 dark:text-slate-300'" class="text-[11px] font-bold tracking-wide">
+          <img :src="lang.flag" class="w-5 h-5 rounded-full object-cover border border-white/20" />
+          <div class="flex flex-col text-left">
+            <span :class="currentLang === lang.code ? 'text-white' : 'text-slate-700 dark:text-slate-200'" class="text-[11px] font-bold leading-tight">
               {{ lang.label }}
             </span>
-            <span class="text-[8px] text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{{ lang.native }}</span>
-          </div>
-          <div v-if="currentLang === lang.code" class="w-5 h-5 flex items-center justify-center bg-indigo-600 dark:bg-indigo-500 rounded-full shadow-lg shadow-indigo-500/40 scale-90">
-            <ion-icon :icon="checkmarkOutline" class="text-[10px] text-white"></ion-icon>
+            <span :class="currentLang === lang.code ? 'text-blue-100' : 'text-slate-400'" class="text-[9px] uppercase tracking-wider font-medium">
+              {{ lang.native }}
+            </span>
           </div>
         </button>
       </div>
@@ -57,40 +71,45 @@
 
   <button 
     @click="toggleTheme" 
-    class="w-11 h-11 flex items-center justify-center rounded-2xl 
+    class="w-10 h-10 flex items-center justify-center rounded-2xl 
            bg-white/10 dark:bg-white/5 
-           backdrop-blur-2xl border 
-           border-slate-200 dark:border-white/10 
-           shadow-xl dark:shadow-2xl 
+           backdrop-blur-md border border-white/20 dark:border-white/10 
+           shadow-lg shadow-black/5
            active:scale-90 transition-all duration-500 
-           hover:bg-slate-50 dark:hover:bg-white/10"
+           hover:bg-white/20 dark:hover:bg-white/10"
   >
-    <div class="relative w-5 h-5 flex items-center justify-center">
+    <div class="relative w-6 h-6 flex items-center justify-center">
       <transition name="icon-rotate" mode="out-in">
         <ion-icon 
           v-if="isDarkMode" 
           :key="'sun'"
           :icon="sunny" 
-          class="text-2xl text-amber-500 dark:text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]"
+          class="text-xl text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]"
         ></ion-icon>
         <ion-icon 
           v-else 
           :key="'moon'"
           :icon="moon" 
-          class="text-2xl text-indigo-600 dark:text-indigo-400 drop-shadow-[0_0_10px_rgba(129,140,248,0.3)]"
+          class="text-xl text-blue-600 drop-shadow-[0_0_8px_rgba(37,99,235,0.3)]"
         ></ion-icon>
       </transition>
     </div>
   </button>
 </div>
-
-      <div class="flex flex-col items-center justify-center min-h-full py-4 px-6">
+          <div class="w-full max-w-sm mb-2 mt-8 mx-auto">
+  <div class="flex flex-col items-center justify-center mt-16">
+    
+    <div class="flex items-center gap-4 group">
+      <div class="relative flex items-center justify-center w-12 h-12 rounded-2xl 
+                  bg-gradient-to-br from-blue-700 to-indigo-800 
+                  shadow-[0_12px_24px_-5px_rgba(37,99,235,0.4)] 
+                  transition-all duration-500 group-hover:scale-105 group-hover:-rotate-3">
+        <ion-icon :icon="restaurant" class="text-2xl text-white"></ion-icon>
         
-        <div class="mb-4 text-center animate-fade-in-down">
-          <div class="inline-block p-6 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-[2.5rem] shadow-[0_25px_60px_rgba(79,70,229,0.45)] mb-6 transform hover:rotate-6 transition-transform duration-500">
-            <ion-icon :icon="restaurant" class="text-6xl text-white"></ion-icon>
-          </div>
-          <h1 class="flex items-center gap-1 text-4xl font-black tracking-tighter select-none">
+        <div class="absolute inset-0 rounded-2xl border border-white/20"></div>
+      </div>
+
+      <h1 class="flex items-center gap-1 text-4xl font-black tracking-tighter select-none mt-3">
   <span class="text-slate-900 dark:text-white transition-colors duration-300">
     Resto
   </span>
@@ -99,112 +118,65 @@
     <span class="absolute -bottom-1 left-0 w-full h-1 bg-indigo-500/20 blur-sm rounded-full"></span>
   </span>
 </h1>
-          <!-- <div class="h-1.5 w-12 bg-indigo-500 mx-auto mt-4 rounded-full opacity-60"></div> -->
+    </div>
+
+  </div>
+</div>
+          <div class="space-y-1">
+            <label class="text-[9px] font-bold text-indigo-600 uppercase ml-2 tracking-widest opacity-80">Server</label>
+            <Input 
+              iconPre="fas fa-server"
+              clearable
+              v-model="loginForm.server"
+              placeholder="Zavod serveri"
+              class="custom-input"
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-[9px] font-bold text-indigo-600 uppercase ml-2 tracking-widest opacity-80">Foydalanuvchi</label>
+            <Input 
+              iconPre="fas fa-user-shield"
+              clearable
+              v-model="loginForm.username"
+              placeholder="Login"
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-[9px] font-bold text-indigo-600 uppercase ml-2 tracking-widest opacity-80">Parol</label>
+            <Input
+              iconPre="fas fa-lock"
+              clearable
+              v-model="loginForm.password"
+              :type="showPassword ? 'text' : 'password'" 
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div class="pt-4">
+            <Button
+              rightIcon="fas fa-arrow-right"
+              variant="primary"
+              @click="handleManualLogin"
+              :disabled="isProcessing"
+              class="w-full h-14 !rounded-2xl shadow-lg shadow-blue-500/20 font-bold"
+            >
+              Tizimga kirish
+            </Button>
+          </div>
+          
+          <p class="text-[10px] text-center text-slate-500 uppercase tracking-widest pt-2">
+            Zavod boshqaruv tizimi v1.0.0
+          </p>
         </div>
-
-        <div class="w-full max-w-sm space-y-5 animate-slide-up">
-           <div class="">
-  <label class="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase ml-5 tracking-[0.25em]">
-    Server
-  </label>
-  <div class="relative group">
-  
-    <Input 
-    iconPre="fas fa-server"
-    clearable
-    required
-      v-model="loginForm.server"
-      type="text" 
-      placeholder="Server nomi"
-     
-    />
-  </div>
-</div>
-       <div class="">
-  <label class="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase ml-5 tracking-[0.25em]">
-    Foydalanuvchi
-  </label>
-  <div class="relative group">
-  
-    <Input 
-    iconPre="fas fa-user"
-
-    clearable
-      v-model="loginForm.username"
-      type="text" 
-      placeholder="Foydalanuvchi nomi"
-    
-    />
-  </div>
-</div>
-
-<div class="">
-  <label class="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase ml-5 tracking-[0.25em]">
-Parol
-  </label>
-  <div class="relative group">
-    
-    <Input
-
-    clearable
-      v-model="loginForm.password"
-      :type="showPassword ? 'text' : 'password'" 
-      placeholder="••••••••"
-     
-    />
-    
-  </div>
-</div>
-
-          <Button
-          rightIcon="fas fa-arrow-right"
-          variant="primary"
-  @click="handleManualLogin"
-  :disabled="isProcessing"
-  class="w-full"
->
- Tizimga kirish
-</Button>
-
-<!-- <div class="relative flex items-center py-6 px-2">
-  <div class="flex-grow border-t border-slate-200 dark:border-slate-800/60 transition-colors"></div>
-  <span class="flex-shrink mx-5 text-slate-400 dark:text-slate-600 text-[10px] font-black uppercase tracking-[0.4em] transition-colors">
-    Xavfsiz kirish
-  </span>
-  <div class="flex-grow border-t border-slate-200 dark:border-slate-800/60 transition-colors"></div>
-</div> -->
-
-<!-- <button 
-  @click="handleBiometricLogin" 
-  :disabled="isLoadingBiometric"
-  class="w-full py-4
-         bg-slate-100 dark:bg-white/5 
-         border border-slate-200 dark:border-white/10 
-         text-slate-900 dark:text-white 
-         font-bold rounded-[22px] 
-         bg-slate-200 dark:hover:bg-white/10 
-         active:scale-[0.97] transition-all flex items-center justify-center space-x-3 
-         backdrop-blur-xl group"
->
-  <template v-if="!isLoadingBiometric">
-    <ion-icon 
-      :icon="fingerPrintOutline" 
-      class="text-2xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform duration-300"
-    ></ion-icon>
-    <span class="text-sm tracking-wide text-slate-700 dark:text-white/80">
-      Barmoq izi orqali
-    </span>
-  </template>
-  <ion-spinner v-else name="dots" color="primary"></ion-spinner>
-</button> -->
-        </div>
-
-     
 
       </div>
     </ion-content>
   </ion-page>
 </template>
+
+
 
 <script setup>
 import { ref, reactive } from 'vue';
@@ -220,7 +192,8 @@ import {
 import { 
   restaurant, 
    
- sunny, moon, chevronDownOutline, checkmarkOutline, 
+ sunny, moon, chevronDownOutline, checkmarkOutline,
+ water, 
   
 } from 'ionicons/icons';
 
@@ -423,5 +396,19 @@ input:-webkit-autofill {
 
 button:active {
   transform: scale(0.96);
+}
+/* Minimalistik ko'rinish uchun qo'shimcha stil */
+.custom-input {
+  --background: transparent;
+  --border-radius: 16px;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>

@@ -1,10 +1,15 @@
 <script setup>
-import { ref, computed, nextTick, onBeforeUnmount, onMounted } from 'vue';
+import { ref, computed, nextTick, onBeforeUnmount, onMounted, watch } from 'vue';
+import draggable from 'vuedraggable'; // vuedraggable import qilindi
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 const props = defineProps({
   items: { type: Array, required: true },
-  title: { type: String, default: 'Amallar' }
+  title: { type: String, default: 'Amallar' },
+  draggable: { type: Boolean, default: false } // Sudrash imkoniyatini yoqish/o'chirish
 });
+
+const emit = defineEmits(['reorder']); // Yangi tartibni yuborish uchun
 
 const isOpen = ref(false);
 const triggerRef = ref(null);
@@ -12,12 +17,18 @@ const menuRef = ref(null);
 const isMobile = ref(false);
 const menuStyles = ref({ top: '0px', left: '0px', transformOrigin: 'top right' });
 
-// Ekran hajmini tekshirish
+// Local nusxa (sudrash uchun propsni bevosita o'zgartirib bo'lmaydi)
+const localItems = ref([...props.items]);
+
+watch(() => props.items, (newVal) => {
+  localItems.value = [...newVal];
+}, { deep: true });
+
 const checkScreen = () => {
   isMobile.value = window.innerWidth < 768;
 };
 
-const visibleItems = computed(() => props.items.filter(item => item.show !== false));
+const visibleItems = computed(() => localItems.value.filter(item => item.show !== false));
 
 const calculatePosition = async () => {
   if (!triggerRef.value || isMobile.value) return;
@@ -34,13 +45,11 @@ const calculatePosition = async () => {
   let originY = 'top';
   let originX = 'right';
 
-  // Pastga sig'masa, tepaga chiqarish
   if (top + menuRect.height > viewportHeight) {
     top = rect.top - menuRect.height - 10;
     originY = 'bottom';
   }
 
-  // Chapga chiqib ketsa
   if (left < 10) {
     left = 10;
     originX = 'left';
@@ -59,7 +68,7 @@ const toggleMenu = async () => {
     await nextTick();
     if (!isMobile.value) calculatePosition();
     setupEventListeners();
-    document.body.style.overflow = 'hidden'; // Scrollni bloklash
+    document.body.style.overflow = 'hidden';
   } else {
     closeMenu();
   }
@@ -76,20 +85,22 @@ const handleAction = (item) => {
   closeMenu();
 };
 
-const handleKeyDown = (e) => {
-  if (e.key === 'Escape') closeMenu();
+const onDragStart = async () => {
+  try { await Haptics.impact({ style: ImpactStyle.Light }); } catch (e) {}
 };
 
+const onDragEnd = () => {
+  emit('reorder', localItems.value);
+};
+
+// Event listeners... (handleKeyDown, setup, remove kodi o'zgarishsiz qoladi)
+const handleKeyDown = (e) => { if (e.key === 'Escape') closeMenu(); };
 const setupEventListeners = () => {
-  window.addEventListener('resize', () => {
-    checkScreen();
-    calculatePosition();
-  });
+  window.addEventListener('resize', calculatePosition);
   window.addEventListener('keydown', handleKeyDown);
 };
-
 const removeEventListeners = () => {
-  window.removeEventListener('resize', checkScreen);
+  window.removeEventListener('resize', calculatePosition);
   window.removeEventListener('keydown', handleKeyDown);
 };
 
@@ -141,47 +152,57 @@ onBeforeUnmount(() => {
 
           <div class="px-4 py-2 mb-2 flex justify-between items-center">
             <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ title }}</h4>
-            <button v-if="isMobile" @click="closeMenu" class="text-slate-400 hover:text-slate-600">
+            <button v-if="isMobile" @click="closeMenu" class="text-slate-400">
                <i class="fa-solid fa-xmark text-xl"></i>
             </button>
           </div>
 
-          <div class="grid gap-2">
-            <button
-              v-for="(item, index) in visibleItems"
-              :key="index"
-              @click.stop="handleAction(item)"
-              class="w-full group flex items-center gap-4 p-3 rounded-2xl transition-all duration-200 active:scale-[0.98] text-left"
-              :class="[
-                item.variant === 'danger'
-                  ? 'hover:bg-red-50 dark:hover:bg-red-950/30'
-                  : 'hover:bg-slate-50 dark:hover:bg-slate-800'
-              ]"
-            >
+          <draggable 
+            v-model="localItems" 
+            item-key="label"
+            :disabled="!props.draggable"
+            handle=".drag-handle"
+            @start="onDragStart"
+            @end="onDragEnd"
+            ghost-class="ghost-item"
+            class="grid gap-2"
+          >
+            <template #item="{ element: item }">
               <div 
-                class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors"
-                :class="[
-                  item.variant === 'danger'
-                    ? 'bg-red-100 text-red-600 dark:bg-red-900/40'
-                    : 'bg-slate-100 text-slate-500 group-hover:bg-white group-hover:text-indigo-600 dark:bg-slate-800'
-                ]"
+                class="group flex items-center gap-1 rounded-2xl transition-all duration-200"
+                :class="item.variant === 'danger' ? 'hover:bg-red-50 dark:hover:bg-red-950/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800'"
               >
-                <i :class="[item.icon, 'text-lg']"></i>
-              </div>
+                <div v-if="props.draggable" class="drag-handle pl-3 py-4 cursor-grab active:cursor-grabbing text-slate-300 hover:text-indigo-500">
+                  <i class="fa-solid fa-grip-vertical text-xs"></i>
+                </div>
 
-              <div class="flex flex-col min-w-0">
-                <span :class="[
-                  'text-[15px] font-bold leading-tight',
-                  item.variant === 'danger' ? 'text-red-600' : 'text-slate-700 dark:text-slate-200'
-                ]">
-                  {{ item.label }}
-                </span>
-                <span v-if="item.description" class="text-xs text-slate-400 dark:text-slate-500 truncate">
-                  {{ item.description }}
-                </span>
+                <button
+                  @click.stop="handleAction(item)"
+                  class="flex-1 flex items-center gap-4 p-3 text-left outline-none"
+                >
+                  <div 
+                    class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                    :class="[
+                      item.variant === 'danger'
+                        ? 'bg-red-100 text-red-600 dark:bg-red-900/40'
+                        : 'bg-slate-100 text-slate-500 group-hover:bg-white group-hover:text-indigo-600 dark:bg-slate-800'
+                    ]"
+                  >
+                    <i :class="[item.icon, 'text-lg']"></i>
+                  </div>
+
+                  <div class="flex flex-col min-w-0">
+                    <span :class="['text-[15px] font-bold leading-tight', item.variant === 'danger' ? 'text-red-600' : 'text-slate-700 dark:text-slate-200']">
+                      {{ item.label }}
+                    </span>
+                    <span v-if="item.description" class="text-xs text-slate-400 dark:text-slate-500 truncate">
+                      {{ item.description }}
+                    </span>
+                  </div>
+                </button>
               </div>
-            </button>
-          </div>
+            </template>
+          </draggable>
         </div>
       </Transition>
     </Teleport>
@@ -189,26 +210,20 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* Desktop Animation */
+/* Sudrash effekti */
+.ghost-item {
+  opacity: 0.5;
+  background: #c7d2fe !important;
+}
+
+/* Oldingi animatsiyalar... */
 .premium-dropdown-enter-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .premium-dropdown-leave-active { transition: all 0.2s ease-in; }
 .premium-dropdown-enter-from { opacity: 0; transform: scale(0.8) translateY(-10px); }
-.premium-dropdown-leave-to { opacity: 0; transform: scale(0.95); }
 
-/* Mobile Bottom Sheet Animation */
 .slide-up-enter-active, .slide-up-leave-active { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
-.slide-up-enter-from { transform: translateY(100%); }
-.slide-up-leave-to { transform: translateY(100%); }
+.slide-up-enter-from, .slide-up-leave-to { transform: translateY(100%); }
 
-/* Background Fade */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
-
-/* Responsive Adjustments */
-@media (max-width: 767px) {
-  .fixed {
-    max-height: 85vh;
-    overflow-y: auto;
-  }
-}
 </style>
