@@ -5,7 +5,7 @@ import { TabelStore } from "../../stores/index.store";
 import { Button, Select, Modal, Input,TextArea } from "../../UI/UI";
 
 const store_tabel = TabelStore();
-const { isModal,model } = storeToRefs(store_tabel);
+const { isModal,model,modalAction } = storeToRefs(store_tabel);
 
 // Statik optionlar (Select uchun)
 const roomOptions = [
@@ -28,6 +28,7 @@ const statusOptions = [
 // Komponentlar massivi (Validatsiya uchun)
 const formRefs = ref([]);
 const Save = async () => {
+  
   const results = formRefs.value.map(refItem => refItem?.validate());
   if (results.includes(false)) {
     const firstError = document.querySelector('.border-rose-500');
@@ -36,8 +37,7 @@ const Save = async () => {
   }
   try {
     
-  const data = await store_tabel.Create(model.value);
-    console.log("Yangi stol yaratildi:", data);
+  const data = await store_tabel.Create(model.value, modalAction.value);
     
   } catch (err) {
     // 3. Server validatsiyasi (Backend'dan kelgan xatolar)
@@ -52,10 +52,10 @@ const Save = async () => {
 <template>
   <Modal
     v-model="isModal"
-    title="Yangi stol qo'shish"
-    icon="fa-solid fa-plus-circle"
+    :title="modalAction === 'edit' ? 'Stolni tahrirlash' : 'Yangi stol yaratish'"
+    :icon="modalAction === 'edit' ? 'fa-solid fa-edit' : 'fa-solid fa-plus'"
   >
-    <div class="sticky top-[-24px] z-50 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 p-4 mb-6 -mx-2">
+    <!-- <div class="sticky top-[-24px] z-50 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 p-4 mb-6 -mx-2">
       <div class="flex items-center justify-between gap-4">
         <div class="flex flex-col">
           <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Mavjud stollar</span>
@@ -67,9 +67,9 @@ const Save = async () => {
           <span class="text-xl font-black text-indigo-600 font-mono">T-0125</span>
         </div>
       </div>
-    </div>
+    </div> -->
 
-    <div class="space-y-5 pb-28 px-1">
+    <div class="space-y-5 pb-4 px-1 mt-3">
       
       <div class="grid grid-cols-2 gap-4">
         <div class="flex flex-col gap-1.5">
@@ -162,7 +162,7 @@ const Save = async () => {
         size="sm"
         leftIcon="fas fa-check"
         >
-          Saqlash
+          {{ modalAction === 'edit' ? 'O\'zgartirishlarni saqlash' : 'Stolni yaratish' }}
         </Button>
       </div>
     </template>

@@ -16,7 +16,7 @@
         />
 
         <Button 
-          @click="store.ModalAction()" 
+          @click="store.ModalAction({action:'create'})" 
           icon="fas fa-plus" 
           size="sm" 
           class="!bg-indigo-600 !text-white shadow-lg shadow-indigo-500/20 rounded-xl" 
@@ -240,8 +240,8 @@ const handleTableClick = async (table) => {
 };
 
 const getTableActions = (table) => [
-  { label: 'Tahrirlash', icon: 'fa-solid fa-pen-to-square', onClick: () => store.ModalAction(table) },
-  { label: 'Hisob berish', icon: 'fa-solid fa-calculator', onClick: () => store.BookingModalAction(table, 'booked') },
+  { label: 'Tahrirlash', icon: 'fa-solid fa-pen-to-square', onClick: () => store.ModalAction({id:table._id,action:'edit'}) },
+  { label: 'Hisob berish', icon: 'fa-solid fa-calculator', onClick: () => store.Create({_id:table._id,status:3}, 'edit') },
 
   { label: 'Bron qo\'shish', icon: 'fa-solid fa-calendar-plus', onClick: () => store.BookingModalAction(table, 'booked') },
   { label: 'Ta’mirga olish', icon: 'fa-solid fa-screwdriver-wrench', onClick: () => store.setStatus(table, 'maintenance') },

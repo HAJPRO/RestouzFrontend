@@ -6,6 +6,7 @@ export const TabelStore = defineStore('TabelStore', {
   state: () => ({
     model : {},
     isModal: false,
+    modalAction:'',
     isBookingModal: false,
     bookingModel: {},
     tableBookings: [],
@@ -14,17 +15,26 @@ export const TabelStore = defineStore('TabelStore', {
   }),
 
   actions: {
-    async ModalAction() {
+    async ModalAction(payload) {
+      this.modalAction = payload?.action; 
+      if(payload?.action === 'edit') {
+        const response = await TabelService.GetById(payload.id);
+        this.model = response.data.data.data;
+        
+      }else {
+        this.model = {}
+      }
       this.isModal = !this.isModal
-      console.log("modal")
     },
    
 
-    async Create(payload) {
+    async Create(payload,action) {
       const { toast } = useToast();
       this.loading = true;
+      console.log(action);
+      
       try {
-        const response = await TabelService.Create(payload);
+        const response = await TabelService.Create(payload,action);
         const message = response?.data?.message || response?.data?.msg || "Muvaffaqiyatli!";
         // 3. Toast chiqarish
         toast.success(message);
