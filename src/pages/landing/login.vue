@@ -167,7 +167,7 @@
           </div>
           
           <p class="text-[10px] text-center text-slate-500 uppercase tracking-widest pt-2">
-            Zavod boshqaruv tizimi v1.0.0
+            Restaran boshqaruv tizimi v1.0.0
           </p>
         </div>
 

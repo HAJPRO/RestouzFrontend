@@ -105,9 +105,12 @@
           </div>
         </div>
 
-        <div v-else class="flex flex-col items-center justify-center py-40 text-center opacity-40">
-          <ion-icon :icon="pulseOutline" class="text-6xl mb-4" />
-          <h3 class="text-lg font-bold">Hech narsa topilmadi</h3>
+        <div v-else >
+         <LoadingState 
+            title="Stollar yuklanmoqda..." 
+            description="Iltimos, biroz kuting." 
+            
+          />
         </div>
       </div>
     </ion-content>
@@ -128,7 +131,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { storeToRefs } from "pinia";
 
 import { TabelStore } from "../../stores/index.store";
-import { Button, BaseTabs, Header, GlobalRefresher, ActionMenu } from "../../UI/UI";
+import { Button, BaseTabs, Header, GlobalRefresher, ActionMenu,EmptyState,LoadingState } from "../../UI/UI";
 import Footer from '../../partials/Footer.vue';
 import Modal from '../../components/Tabel/ActionModal.vue';
 import CartModal from '../../components/Menu/Cart.vue';
@@ -138,6 +141,7 @@ import {
   timeOutline, pulseOutline, addOutline, cartOutline, 
   walletOutline, bookmarkOutline, constructOutline 
 } from 'ionicons/icons';
+import { Loading } from '../../utils/Loading';
 
 const router = useRouter();
 const store = TabelStore();

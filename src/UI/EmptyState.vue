@@ -6,7 +6,7 @@ import { computed } from 'vue';
 
 const props = defineProps({
   searchTerm: { type: String, default: '' },
-  title: { type: String, default: "Hmm, bu yerda hech narsa yo'q..." },
+  // title: { type: String, default: "Hmm, bu yerda hech narsa yo'q..." },
   description: { type: String, default: "So'rovingiz bo'yicha ma'lumot topilmadi." },
   actionLabel: { type: String, default: "Qidiruvni tozalash" },
   imageType: { type: String, default: 'search' }

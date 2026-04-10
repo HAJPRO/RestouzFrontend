@@ -5,12 +5,7 @@
     <!-- <Header /> -->
 
     <ion-content class="bg-white dark:bg-slate-900" :scroll-y="true">
-      <ion-refresher slot="fixed" @ionRefresh="handleGlobalRefresh($event)">
-        <ion-refresher-content
-          pulling-text="Yangilash uchun pastga torting"
-          refreshing-spinner="circles"
-        ></ion-refresher-content>
-      </ion-refresher>
+     <GlobalRefresher @refresh="handleGlobalRefresh" />
 
       <ion-router-outlet />
     </ion-content>
@@ -25,6 +20,7 @@ import { IonPage, IonContent, IonRouterOutlet, IonRefresher, IonRefresherContent
 // import Footer from '../partials/Footer.vue';
 import Sidebar from '../partials/Sidebare.vue';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import GlobalRefresher from '../UI/GlobalRefresher.vue';
 
 const handleGlobalRefresh = async (event) => {
   try {
