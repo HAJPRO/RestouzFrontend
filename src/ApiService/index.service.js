@@ -1,6 +1,7 @@
 // Modullarni import qilib, qayta export qilamiz
 export { default as AuthService } from './Auth/login.service';
 export { default as TabelService } from './Tabel/tabel.service';
+export { default as MenuService } from './Menu/menu.service';
 export { default as UserService } from './Settings/users/user.service';
 export { default as RoleService } from './Settings/role/role.service';
 export { default as PermissionService } from './Settings/permission/permission.service';
