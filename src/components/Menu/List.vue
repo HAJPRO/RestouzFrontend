@@ -2,7 +2,7 @@
   <ion-page class="bg-slate-50 dark:bg-[#020617]">
     <Header title="Menyu" searchable v-model="searchQuery" searchPlaceholder="Taom izlash...">
       <template #actions>
-        <Button @click="isCategoryModalOpen = true" icon="fas fa-list" size="sm" />
+        <Button @click="store_menu.isCategoryOpen = true" icon="fas fa-list" size="sm" />
         <Button @click="store_menu.ModalAction({ action: 'create' })" icon="fas fa-plus" size="sm" />
       </template>
     </Header>
@@ -101,7 +101,7 @@
         </div>
       </div>
     </ion-content>
-
+<CategoryModal @select="filterItems" />
     <CartModal v-if="isCartOpen" />
     <Footer class="z-50" />
   </ion-page>
@@ -117,6 +117,8 @@ import { storeToRefs } from "pinia";
 import { Button, Header, GlobalRefresher, EmptyState, LoadingState } from "../../UI/UI";
 import Footer from "../../partials/Footer.vue";
 import CartModal from "./Cart.vue";
+import CategoryModal from "./CategoryModal.vue";
+import AddCategoryModal from "./AddCategoryModal.vue";
 
 const store_menu = MenuStore();
 const { menus, isCartOpen, cartItems } = storeToRefs(store_menu);
@@ -170,6 +172,7 @@ const handleUpdateQty = async (id, change) => {
 
 onMounted(() => {
   store_menu.GetAll();
+  store_menu.GetAllCategories();
 });
 </script>
  <style scoped>

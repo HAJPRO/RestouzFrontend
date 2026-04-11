@@ -1,6 +1,33 @@
 <template>
   <ion-page>
     <Modal 
+      v-model="isCategoryOpen"
+      title="Kategoriyalar"
+      icon="fa-solid fa-grid-2"
+      width="550px"
+      @close="isCategoryOpen = false"
+    >
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-1 animate-fade-in">
+        <button 
+          v-for="cat in categories" 
+          :key="cat.id"
+          @click="handleCategorySelect(cat.id)"
+          class="group relative overflow-hidden bg-slate-50 dark:bg-slate-800/40 hover:bg-indigo-600 p-4 rounded-[32px] border border-slate-100 dark:border-white/5 transition-all duration-300 flex flex-col items-center gap-3 active:scale-95 shadow-sm"
+        >
+          <div class="w-12 h-12 rounded-2xl bg-white dark:bg-slate-700 group-hover:bg-white/20 flex items-center justify-center transition-colors">
+            <i :class="['fa-solid', cat.icon, 'text-lg text-indigo-600 dark:text-indigo-400 group-hover:text-white']"></i>
+          </div>
+          <div class="text-center">
+            <span class="block text-[11px] font-black uppercase tracking-wider dark:text-white group-hover:text-white">
+              {{ cat.name }}
+            </span>
+          </div>
+          <i :class="['fa-solid', cat.icon, 'absolute -right-2 -bottom-2 text-4xl opacity-[0.03] group-hover:opacity-10 transition-opacity']"></i>
+        </button>
+      </div>
+    </Modal>
+
+    <Modal 
       v-model="isCartOpen"
       title="Savat"
       icon="fa-solid fa-cart-shopping"
@@ -8,52 +35,46 @@
       @close="isCartOpen = false"
     >
       <div class="space-y-4">
-      <div class="sticky top-0 z-10 mb-4 p-2 bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md rounded-[24px] flex gap-1.5 border border-slate-200/50 dark:border-white/5 shadow-sm ">
-  <button 
-    v-for="tab in ['items', 'settings']" 
-    :key="tab"
-    @click="activeTab = tab"
-    :class="[
-      'flex-1 py-2.5 rounded-[20px] text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-500 ease-out flex items-center justify-center gap-2',
-      activeTab === tab 
-        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-[0_4px_12px_rgba(0,0,0,0.05)] scale-[1.02]' 
-        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/30'
-    ]"
-  >
-    <i :class="[
-      tab === 'items' ? 'fa-solid fa-rectangle-list' : 'fa-solid fa-sliders', 
-      'text-[12px]'
-    ]"></i>
-    <span>{{ tab === 'items' ? 'Buyurtmalar' : 'Sozlamalar' }}</span>
-  </button>
-</div>
+        <div class="sticky top-0 z-10 mb-4 p-2 bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md rounded-[24px] flex gap-1.5 border border-slate-200/50 dark:border-white/5 shadow-sm">
+          <button 
+            v-for="tab in ['items', 'settings']" 
+            :key="tab"
+            @click="activeTab = tab"
+            :class="[
+              'flex-1 py-2.5 rounded-[20px] text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-500 flex items-center justify-center gap-2',
+              activeTab === tab 
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md scale-[1.02]' 
+                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/50'
+            ]"
+          >
+            <i :class="[tab === 'items' ? 'fa-solid fa-rectangle-list' : 'fa-solid fa-sliders', 'text-[12px]']"></i>
+            <span>{{ tab === 'items' ? 'Buyurtmalar' : 'Sozlamalar' }}</span>
+          </button>
+        </div>
 
         <div v-if="activeTab === 'items'" class="space-y-4 animate-fade-in">
           <div v-if="cartItems.length > 0" class="flex items-center justify-between px-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-            <span>Savat tarkibi ({{ totalItemsCount }} ta mahsulot)</span>
+            <span>Buyurtmalar ({{ totalItemsCount }} xil)</span>
             <Button @click="isCartOpen = false" size="sm" variant="secondary" class="!h-8 !text-[9px] !rounded-xl">
               <i class="fa-solid fa-plus mr-1"></i> Qo'shish
             </Button>
           </div>
 
           <div v-if="cartItems.length > 0" class="space-y-3">
-            <div 
-              v-for="item in cartItems" 
-              :key="item.id" 
-              class="bg-white dark:bg-slate-900 rounded-[28px] p-2 flex gap-4 items-center border border-slate-100 dark:border-white/5 shadow-sm transition-all hover:border-indigo-100 dark:hover:border-indigo-500/20"
+            <div v-for="item in cartItems" :key="item.id" 
+              class="bg-white dark:bg-slate-900 rounded-[28px] p-2 flex gap-4 items-center border border-slate-100 dark:border-white/5 shadow-sm"
             >
               <img :src="item.image" class="w-16 h-16 rounded-[20px] object-cover bg-slate-100 dark:bg-slate-800" />
               <div class="flex-1 min-w-0">
                 <div class="flex justify-between">
-                  <h4 class="text-sm font-black truncate dark:text-white text-slate-800 uppercase tracking-tight">{{ item.name }}</h4>
-                  <button @click="handleRemove(item.id)" class="text-slate-300 hover:text-rose-500 active:scale-75 transition-all p-1">
+                  <h4 class="text-sm font-black truncate dark:text-white text-slate-800 uppercase leading-tight">{{ item.name }}</h4>
+                  <button @click="handleRemove(item.id)" class="text-slate-300 hover:text-rose-500 transition-all p-1">
                     <i class="fa-solid fa-trash-can text-xs"></i>
                   </button>
                 </div>
                 <div class="flex items-center justify-between mt-2">
                   <p class="text-[13px] font-black text-indigo-600 dark:text-indigo-400">
-                    {{ (item.price * item.quantity).toLocaleString() }} 
-                    <span class="text-[9px] opacity-40 uppercase ml-0.5">uzs</span>
+                    {{ (item.price * item.quantity).toLocaleString() }} <span class="text-[9px] opacity-40 uppercase ml-0.5">uzs</span>
                   </p>
                   <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 gap-1">
                     <button @click="handleUpdateQty(item.id, -1)" class="w-8 h-8 bg-white dark:bg-slate-700 rounded-lg flex items-center justify-center active:scale-75 shadow-sm dark:text-white">
@@ -77,7 +98,7 @@
 
         <div v-if="activeTab === 'settings'" class="space-y-6 animate-fade-in">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div @click="store_menu.toggleService()" class="bg-slate-50 dark:bg-slate-800/40 rounded-[28px] p-3 flex items-center justify-between border border-slate-100 dark:border-white/5 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <div @click="store_menu.toggleService()" class="bg-slate-50 dark:bg-slate-800/40 rounded-[28px] p-3 flex items-center justify-between border border-slate-100 dark:border-white/5 cursor-pointer hover:bg-slate-100 transition-colors">
               <div class="flex items-center gap-2">
                 <div :class="['w-10 h-10 rounded-xl flex items-center justify-center transition-all', isServiceActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-200 dark:bg-slate-700 text-slate-400']">
                   <i class="fa-solid fa-utensils text-xs"></i>
@@ -121,37 +142,13 @@
           <div class="grid grid-cols-1 gap-4">
             <transition name="fade-slide">
               <div v-if="orderType === 'table'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Select 
-                  size="small" 
-                  v-model="selectedTable" 
-                  label="Stol Tanlang" 
-                  :options="tableList" 
-                  searchable 
-                  placeholder="Stol raqami..." 
-                  iconPre="fa-solid fa-circle-dot"
-                />
-                <Select 
-                  size="small" 
-                  v-model="selectedCustomer" 
-                  label="Mijoz (Ixtiyoriy)" 
-                  :options="customerList" 
-                  searchable 
-                  placeholder="Mijoz ismi..." 
-                />
+                <Select size="small" v-model="selectedTable" label="Stol Tanlang" :options="tableList" searchable placeholder="Stol raqami..." iconPre="fa-solid fa-circle-dot" />
+                <Select size="small" v-model="selectedCustomer" label="Mijoz (Ixtiyoriy)" :options="customerList" searchable placeholder="Mijoz ismi..." />
               </div>
             </transition>
-
-            <Select 
-              size="small" 
-              v-model="selectedStaff" 
-              label="Mas'ul Ofitsiant" 
-              :options="staffList" 
-              searchable 
-              placeholder="Ofitsiantni tanlang..." 
-            />
+            <Select size="small" v-model="selectedStaff" label="Mas'ul Ofitsiant" :options="staffList" searchable placeholder="Ofitsiantni tanlang..." />
+            <TextArea v-model="orderComment" placeholder="Masalan: Achchiq bo'lmasin..." label="Buyurtma uchun izoh..." />
           </div>
-
-          <TextArea v-model="orderComment" placeholder="Masalan: Achchiq bo'lmasin..." label="Buyurtma uchun izoh..."></TextArea>
         </div>
       </div>
 
@@ -170,12 +167,7 @@
                 <span class="text-[10px] font-black text-indigo-600 uppercase ml-1">uzs</span>
               </div>
             </div>
-            <Button 
-              @click="handleSaveOrder" 
-              :disabled="!isReadyToOrder" 
-              size="sm"
-              leftIcon="fas fa-check"
-            >
+            <Button @click="handleSaveOrder" :disabled="!isReadyToOrder" size="sm" leftIcon="fas fa-check">
               <span class="text-[11px] font-black uppercase tracking-widest">Saqlash</span>
             </Button>
           </div>
@@ -194,9 +186,12 @@ import { Select, Button, Modal, TextArea } from '../../UI/UI';
 
 const store_menu = MenuStore();
 
+// Store-dan barcha holatlar
 const { 
   cartItems, 
   isCartOpen, 
+  isCategoryOpen, // Kategoriya modali uchun
+  categories,     // Kategoriya ro'yxati
   totalItemsCount,
   currentSubtotal,
   calculateServiceFee,
@@ -214,14 +209,22 @@ const {
 
 const activeTab = ref('items');
 
-// API dan kelishi kerak bo'lgan ro'yxatlar
+// Dummy ma'lumotlar (API kelguncha)
 const staffList = ref([{ id: 1, name: 'Umid Shomurodov' }, { id: 2, name: 'Sardor Ali' }]);
-const tableList = ref([{ id: 1, name: 'Stol #1' }, { id: 2, name: 'Stol #2' }, { id: 3, name: 'Stol #3' }, { id: 4, name: 'VIP xona' }]);
+const tableList = ref([{ id: 1, name: 'Stol #1' }, { id: 2, name: 'Stol #2' }, { id: 3, name: 'VIP xona' }]);
 const customerList = ref([{ id: 1, name: 'Mijoz #1' }, { id: 2, name: 'Mijoz #2' }]);
 
 onMounted(async () => {
   await Haptics.impact({ style: ImpactStyle.Medium });
 });
+
+// FUNKSIYALAR
+const handleCategorySelect = async (categoryId) => {
+  await Haptics.impact({ style: ImpactStyle.Light });
+  // Bu yerda kategoriyani filterlash mantiqi bo'ladi
+  console.log("Tanlangan kategoriya:", categoryId);
+  isCategoryOpen.value = false; // Tanlangach modalni yopish
+};
 
 const handleUpdateQty = async (id, change) => {
   store_menu.updateCartQty({ id, change });
@@ -235,12 +238,8 @@ const handleRemove = async (id) => {
 
 const handleSaveOrder = async () => {
   if (!isReadyToOrder.value) return;
-  
   await Haptics.notification({ type: NotificationType.Success });
-  
-  // Buyurtma yuborish mantiqi (masalan store dagi action orqali)
   // store_menu.submitOrder();
-  
   isCartOpen.value = false;
 };
 </script>

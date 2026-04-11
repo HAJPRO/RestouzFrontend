@@ -4,40 +4,41 @@ import { MenuService } from "../../ApiService/index.service";
 
 export const MenuStore = defineStore('MenuStore', {
   state: () => ({
+    // --- FOOD (TAOM) STATE ---
     model: {},
     isModal: false,
-    isCartOpen: false,
     modalAction: '',
     menus: [],
     loading: false,
 
+    // --- CATEGORY STATE ---
+    isCategoryOpen: false, // Kategoriyalar ro'yxati modali (ion-modal)
+    isCategoryEditModal: false, // Kategoriya qo'shish/tahrirlash modali
+    categoryModalAction: 'create', // 'add' yoki 'edit'
+    categoryModel: {
+      name: '',
+      image: null,
+      icon: 'fa-solid fa-utensils'
+    },
+    categories: [], // API'dan keladigan kategoriyalar
+
     // --- CART STATE ---
-    cartItems: [], // Savatdagi mahsulotlar ro'yxati
-    isServiceActive: true, // 10% xizmat haqi holati
-    discountPercent: 0, // Chegirma foizi
+    isCartOpen: false,
+    cartItems: [],
+    isServiceActive: true,
+    discountPercent: 0,
     selectedTable: null,
     selectedStaff: null,
-    orderType: 'table', // 'table' yoki 'takeaway'
-    orderComment: '', // Buyurtma uchun izoh
+    orderType: 'table',
+    orderComment: '',
   }),
 
   getters: {
-    // Savatdagi jami mahsulotlar soni
     totalItemsCount: (state) => state.cartItems.reduce((sum, item) => sum + item.quantity, 0),
-    
-    // Asosiy summa (xizmat va chegirmasiz)
     currentSubtotal: (state) => state.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-    
-    // Xizmat haqi (10%)
     calculateServiceFee: (state) => state.isServiceActive ? state.currentSubtotal * 0.1 : 0,
-    
-    // Chegirma summasi
     calculateDiscountAmount: (state) => state.currentSubtotal * (state.discountPercent / 100),
-    
-    // Yakuniy jami summa
     finalTotal: (state) => (state.currentSubtotal + state.calculateServiceFee) - state.calculateDiscountAmount,
-
-    // Tasdiqlashga tayyormi?
     isReadyToOrder: (state) => {
       const hasItems = state.cartItems.length > 0;
       const hasStaff = state.selectedStaff !== null;
@@ -47,20 +48,81 @@ export const MenuStore = defineStore('MenuStore', {
   },
 
   actions: {
-    // --- CART ACTIONS ---
+    // --- CATEGORY ACTIONS ---
     
-    // Savatga qo'shish yoki sonini o'zgartirish
+    // Kategoriya qo'shish yoki tahrirlash modalini ochish
+    async openCategoryForm(payload = null) {
+      if (payload && payload.id) {
+        this.categoryModalAction = 'edit';
+        // Agar API'dan olish kerak bo'lsa:
+        // const res = await MenuService.GetCategoryById(payload.id);
+        // this.categoryModel = res.data;
+        this.categoryModel = { ...payload }; // Hozircha borini yuklaymiz
+      } else {
+        this.categoryModalAction = 'create';
+        this.categoryModel = { name: '', image: null, icon: 'fa-solid fa-utensils' };
+      }
+      this.isCategoryEditModal = true;
+    },
+
+    async CreateCategory(payload) {
+      const { toast } = useToast();
+      this.loading = true;
+      try {
+        // MenuService ichida CreateCategory metodini ochgan bo'lishingiz kerak
+        const response = await MenuService.CreateCategory(payload);
+        toast.success(this.categoryModalAction === 'edit' ? "Kategoriya yangilandi" : "Kategoriya qo'shildi");
+        this.isCategoryEditModal = false;
+        this.GetCategories(); // Ro'yxatni yangilash
+      } catch (error) {
+        toast.error("Kategoriyani saqlashda xatolik");
+      } finally {
+        this.loading = false;
+        this.GetAllCategories(); 
+        this.isCategoryOpen = true; // Kategoriyalar ro'yxatini yangilash
+      }
+    },
+
+    async GetAllCategories() {
+      try {
+        const response = await MenuService.GetAllCategories();
+        this.categories = response.data.data;
+      } catch (error) {
+        console.error("Kategoriyalarni yuklashda xatolik");
+      }
+    },
+
+    async DeleteCategory(id) {
+      const { toast } = useToast();
+      try {
+        await MenuService.DeleteCategory(id);
+        toast.success("Kategoriya o'chirildi");
+        this.GetCategories();
+      } catch (error) {
+        toast.error("O'chirishda xatolik yuz berdi");
+      }
+    },
+
+    // --- FOOD MODAL ACTIONS ---
+    async ModalAction(payload) {
+      this.modalAction = payload?.action;
+      if (payload?.action === 'edit') {
+        const response = await MenuService.GetById(payload.id);
+        this.model = response.data.data.data;
+      } else {
+        this.model = {};
+      }
+      this.isModal = !this.isModal;
+    },
+
+    // --- CART ACTIONS ---
     addToCart(product) {
       const { toast } = useToast();
       const existingItem = this.cartItems.find(item => item.id === product.id);
-
       if (existingItem) {
         existingItem.quantity += 1;
       } else {
-        this.cartItems.push({
-          ...product,
-          quantity: 1
-        });
+        this.cartItems.push({ ...product, quantity: 1 });
         toast.success(`${product.name} savatga qo'shildi`);
       }
     },
@@ -70,9 +132,7 @@ export const MenuStore = defineStore('MenuStore', {
       const item = this.cartItems.find(i => i.id === id);
       if (item) {
         item.quantity += change;
-        if (item.quantity <= 0) {
-          this.removeFromCart(id);
-        }
+        if (item.quantity <= 0) this.removeFromCart(id);
       }
     },
 
@@ -90,36 +150,19 @@ export const MenuStore = defineStore('MenuStore', {
       this.isServiceActive = !this.isServiceActive;
     },
 
-    // --- MODAL ACTIONS ---
-    async ModalAction(payload) {
-      this.modalAction = payload?.action;
-      if (payload?.action === 'edit') {
-        const response = await MenuService.GetById(payload.id);
-        this.model = response.data.data.data;
-      } else {
-        this.model = {};
-      }
-      this.isModal = !this.isModal;
-    },
-
-    CardModalAction() {
-      this.isCartOpen = !this.isCartOpen;
-    },
-
-    // --- API ACTIONS ---
+    // --- API ACTIONS (FOOD) ---
     async Create(payload, action) {
       const { toast } = useToast();
       this.loading = true;
       try {
-        const response = await MenuService.Create(payload, action);
-        const message = response?.data?.message || "Muvaffaqiyatli!";
-        toast.success(message);
+        await MenuService.Create(payload, action);
+        toast.success("Muvaffaqiyatli!");
         this.isModal = false;
+        this.GetAll();
       } catch (error) {
         toast.error(error.response?.data?.message || "Xatolik yuz berdi");
       } finally {
         this.loading = false;
-        this.GetAll();
       }
     },
 
@@ -130,7 +173,7 @@ export const MenuStore = defineStore('MenuStore', {
         this.menus = response.data.data.data;
       } catch (error) {
         const { toast } = useToast();
-        toast.error(error.response?.data?.message || "Yuklashda xatolik");
+        toast.error("Yuklashda xatolik");
       } finally {
         this.loading = false;
       }
