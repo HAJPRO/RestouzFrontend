@@ -102,7 +102,7 @@
       </div>
     </ion-content>
 <CategoryModal @select="filterItems" />
-    <CartModal v-if="isCartOpen" />
+    <CartModal  />
     <Footer class="z-50" />
   </ion-page>
 </template>
@@ -118,14 +118,12 @@ import { Button, Header, GlobalRefresher, EmptyState, LoadingState } from "../..
 import Footer from "../../partials/Footer.vue";
 import CartModal from "./Cart.vue";
 import CategoryModal from "./CategoryModal.vue";
-import AddCategoryModal from "./AddCategoryModal.vue";
 
 const store_menu = MenuStore();
 const { menus, isCartOpen, cartItems } = storeToRefs(store_menu);
 
 const searchQuery = ref("");
 const activeCategory = ref(0);
-const isCategoryModalOpen = ref(false);
 
 const categories = [
   { id: 0, label: "Barchasi", key: "all", icon: "fa-solid fa-border-all" },

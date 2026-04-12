@@ -114,7 +114,9 @@ export const MenuStore = defineStore('MenuStore', {
       }
       this.isModal = !this.isModal;
     },
-
+CardModalAction() {
+  this.isCartOpen = !this.isCartOpen;
+},
     // --- CART ACTIONS ---
     addToCart(product) {
       const { toast } = useToast();
@@ -149,7 +151,65 @@ export const MenuStore = defineStore('MenuStore', {
     toggleService() {
       this.isServiceActive = !this.isServiceActive;
     },
+async CreateOrder() {
+      const { toast } = useToast();
+      
+      // 1. Validatsiya: isReadyToOrder getteridan foydalanamiz
+      // if (!this.isReadyToOrder) {
+      //   toast.error("Iltimos, stol va mas'ul xodimni tanlang!");
+      //   return;
+      // }
 
+      this.loading = true; // Global loading yoqish
+
+      try {
+        // 2. Ma'lumotlarni API formatiga tayyorlash
+        const orderData = {
+          orderType: this.orderType,
+          items: this.cartItems.map(item => ({
+            foodId: item.id || item._id, // API-ga qarab
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            totalPrice: item.price * item.quantity
+          })),
+          subtotal: this.currentSubtotal,
+          serviceFee: this.calculateServiceFee,
+          discountAmount: this.calculateDiscountAmount,
+          finalTotal: this.finalTotal,
+          comment: this.orderComment,
+          staffId: this.selectedStaff?.id || this.selectedStaff, // Tanlangan ofitsiant
+          status: 'pending', // Yangi buyurtma holati
+        };
+
+        // 3. Buyurtma turiga qarab qo'shimcha ma'lumotlar
+        if (this.orderType === 'table') {
+          orderData.tableId = this.selectedTable?.id || this.selectedTable;
+        }
+console.log(orderData);
+
+        // 4. API-ga yuborish
+        const response = await MenuService.CreateOrder(orderData);
+
+        if (response.status === 200 || response.status === 201) {
+          toast.success("Buyurtma muvaffaqiyatli qabul qilindi!");
+          
+          // 5. Muvaffaqiyatli yakundan so'ng tozalash
+          this.clearCart();
+          this.isCartOpen = false;
+          
+          // Agar kerak bo'lsa orders ro'yxatini yangilash funksiyasini chaqirish
+          // await this.FetchOrders(); 
+        }
+      } catch (error) {
+        // 6. Xatolikni boshqarish
+        console.error("Order Submit Error:", error);
+        const errorMessage = error.response?.data?.message || "Buyurtmani yuborishda xatolik yuz berdi";
+        toast.error(errorMessage);
+      } finally {
+        this.loading = false; // Loadingni o'chirish
+      }
+    },
     // --- API ACTIONS (FOOD) ---
     async Create(payload, action) {
       const { toast } = useToast();

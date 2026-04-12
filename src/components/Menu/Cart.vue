@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-    <Modal 
+    <!-- <Modal 
       v-model="isCategoryOpen"
       title="Kategoriyalar"
       icon="fa-solid fa-grid-2"
@@ -25,7 +25,7 @@
           <i :class="['fa-solid', cat.icon, 'absolute -right-2 -bottom-2 text-4xl opacity-[0.03] group-hover:opacity-10 transition-opacity']"></i>
         </button>
       </div>
-    </Modal>
+    </Modal> -->
 
     <Modal 
       v-model="isCartOpen"
@@ -167,7 +167,7 @@
                 <span class="text-[10px] font-black text-indigo-600 uppercase ml-1">uzs</span>
               </div>
             </div>
-            <Button @click="handleSaveOrder" :disabled="!isReadyToOrder" size="sm" leftIcon="fas fa-check">
+            <Button @click="handleSaveOrder()"  size="sm" leftIcon="fas fa-check">
               <span class="text-[11px] font-black uppercase tracking-widest">Saqlash</span>
             </Button>
           </div>
@@ -237,10 +237,12 @@ const handleRemove = async (id) => {
 };
 
 const handleSaveOrder = async () => {
-  if (!isReadyToOrder.value) return;
+  // if (!isReadyToOrder.value) return;
   await Haptics.notification({ type: NotificationType.Success });
-  // store_menu.submitOrder();
-  isCartOpen.value = false;
+  console.log("oks");
+  
+  store_menu.CreateOrder();
+  // isCartOpen.value = false;
 };
 </script>
 

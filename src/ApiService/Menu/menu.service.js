@@ -40,7 +40,20 @@ const MenuService = {
     DeleteCategory(id) {
         const url = `menu/category/delete/${id}`;
         return api.delete(url);
-    }
+    },
+
+
+    ///Cart uchun API
+    CreateOrder(payload) {
+        const url = "menu/order/create";
+        return api.post(url, payload,{
+      headers: {
+        'Content-Type': 'application/json', // FormData emas, JSON yuboramiz
+        'x-tenant-id': localStorage.getItem('companyCode') || 'safymilk'
+      }
+    });
+    },
+  
     
 
 };

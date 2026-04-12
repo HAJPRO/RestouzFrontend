@@ -19,6 +19,7 @@ const routes = [
       { path: 'home', name: 'home', component: () => import('../pages/explore/Home/index.vue') },
       { path: 'statistic', name: 'statistic', component: () => import('../pages/explore/Dashboard/sale/index.vue') },
       { path: 'menu', name: 'menu', component: () => import('../pages/explore/Menu/index.vue') },
+      { path: 'order', name: 'order', component: () => import('../pages/explore/Order/index.vue') },
       { path: 'tables', name: 'tables', component: () => import('../pages/explore/Tabels/index.vue') },
       { path: 'profile', name: 'profile', component: () => import('../pages/explore/Profile/index.vue') },
       { path: 'check', name: 'check', component: () => import('../pages/explore/Check/index.vue') },
