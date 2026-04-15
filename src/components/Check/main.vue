@@ -283,7 +283,7 @@ const config = reactive({
     },
     telegram: { 
         label: 'Telegram', 
-        value: '@safymilk_bot', 
+        value: '@restouz_bot', 
         visible: true, 
         icon: 'fa-brands fa-telegram' // Telegram logosi (brand klassi bilan)
     },

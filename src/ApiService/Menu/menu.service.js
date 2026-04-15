@@ -6,7 +6,7 @@ const MenuService = {
         return api.post(url, payload,{
       headers: {
         'Content-Type': 'application/json', // FormData emas, JSON yuboramiz
-        'x-tenant-id': localStorage.getItem('companyCode') || 'safymilk'
+        'x-tenant-id': localStorage.getItem('companyCode') || 'restouz'
       }
     });
     },
@@ -25,7 +25,7 @@ const MenuService = {
         return api.post(url, payload,{
       headers: {
         'Content-Type': 'application/json', // FormData emas, JSON yuboramiz
-        'x-tenant-id': localStorage.getItem('companyCode') || 'safymilk'
+        'x-tenant-id': localStorage.getItem('companyCode') || 'restouz'
       }
     });
   },
@@ -49,7 +49,7 @@ const MenuService = {
         return api.post(url, payload,{
       headers: {
         'Content-Type': 'application/json', // FormData emas, JSON yuboramiz
-        'x-tenant-id': localStorage.getItem('companyCode') || 'safymilk'
+        'x-tenant-id': localStorage.getItem('companyCode') || 'restouz'
       }
     });
     },
