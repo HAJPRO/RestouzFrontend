@@ -19,7 +19,6 @@
           @click="store.ModalAction({action:'create'})" 
           icon="fas fa-plus" 
           size="sm" 
-          class="!bg-indigo-600 !text-white shadow-lg shadow-indigo-500/20 rounded-xl" 
         />
       </template>
     </Header>
@@ -28,94 +27,100 @@
       <GlobalRefresher />
       
       <div class="max-w-[1600px] mx-auto px-4 py-8 pb-32">
-        <div v-if="filteredTables.length > 0" 
-             class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-          
-          <div 
-            v-for="table in filteredTables" 
-            :key="table.id"
-            @click="handleTableClick(table)"
-            :class="[
-              'group relative flex flex-col justify-between p-5 min-h-[210px] rounded-[32px] transition-all duration-500 cursor-pointer active:scale-95 overflow-hidden border-2',
-              getStatusTheme(table).bgClass,
-              getStatusTheme(table).borderClass
-            ]"
-          >
-            <div :class="['absolute -top-8 -right-8 w-20 h-20 rounded-full opacity-[0.08] transition-transform duration-700 group-hover:scale-150', getStatusTheme(table).dot]"></div>
+       <div v-if="filteredTables.length > 0" 
+     class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+  
+  <div 
+    v-for="table in filteredTables" 
+    :key="table._id"
+    @click="handleTableClick(table)"
+    :class="[
+      'group relative flex flex-col justify-between p-5 min-h-[210px] rounded-[32px] transition-all duration-500 cursor-pointer active:scale-95 overflow-hidden border-2',
+      getStatusTheme(table).bgClass,
+      getStatusTheme(table).borderClass
+    ]"
+  >
+    <div :class="['absolute -top-8 -right-8 w-20 h-20 rounded-full opacity-[0.08] transition-transform duration-700 group-hover:scale-150', getStatusTheme(table).dot]"></div>
 
-            <div class="flex justify-between items-start z-10">
-              <div class="flex flex-col">
-                <span class="text-[10px] font-bold opacity-40 uppercase tracking-[2px] mb-0.5">{{table.position}}</span>
-                <h3 :class="['text-lg font-black tracking-tighter leading-none', getStatusTheme(table).text]">
-                  {{ table.number }}
-                </h3>
+    <div class="flex justify-between items-start z-10">
+      <div class="flex flex-col">
+        <span class="text-[10px] font-bold opacity-40 uppercase tracking-[2px] mb-0.5">{{ table.position }}</span>
+        <h3 :class="['text-lg font-black tracking-tighter leading-none', getStatusTheme(table).text]">
+          {{ table.number }}
+        </h3>
+      </div>
+      
+      <div v-if="getActiveBookingsCount(table) > 0" class="group/tooltip relative">
+        <div class="flex items-center gap-1.5 px-2.5 py-1 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-full border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:border-indigo-400">
+          <i class="fa-solid fa-calendar-check text-[10px] text-indigo-500"></i>
+          <span class="text-[11px] font-black text-slate-700 dark:text-slate-200">{{ getActiveBookingsCount(table) }}</span>
+        </div>
+        
+        <div class="absolute top-full right-0 mt-2 w-48 hidden group-hover/tooltip:block z-[100] animate-in fade-in slide-in-from-top-2">
+          <div class="bg-white dark:bg-slate-800 shadow-2xl rounded-2xl p-2 border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <div class="text-[9px] font-bold text-indigo-500 uppercase mb-2 px-2 border-b border-slate-50 dark:border-slate-700/50 pb-1">Navbatdagi bronlar</div>
+            <div class="max-h-32 overflow-y-auto custom-scrollbar">
+              <div v-for="b in table.bookings" :key="b._id" class="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors">
+                <span class="text-[10px] font-bold text-slate-700 dark:text-slate-200 truncate pr-2">{{ b.client_name || 'Mijoz' }}</span>
+                <span class="text-[9px] font-black opacity-50">
+                  {{ b.booking_time ? new Date(b.booking_time).getHours() + ':' + String(new Date(b.booking_time).getMinutes()).padStart(2, '0') : '' }}
+                </span>
               </div>
-              
-              <div v-if="getActiveBookingsCount(table) > 0" class="group/tooltip relative">
-                <div class="flex items-center gap-1.5 px-2.5 py-1 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-full border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:border-indigo-400">
-                  <i class="fa-solid fa-calendar-check text-[10px] text-indigo-500"></i>
-                  <span class="text-[11px] font-black text-slate-700 dark:text-slate-200">{{ getActiveBookingsCount(table) }}</span>
-                </div>
-                
-                <div class="absolute top-full right-0 mt-2 w-48 hidden group-hover/tooltip:block z-[100] animate-in fade-in slide-in-from-top-2 ">
-                  <div class="bg-white dark:bg-slate-800 shadow-2xl rounded-2xl p-2 border border-slate-100 dark:border-slate-700 overflow-hidden">
-                    <div class="text-[9px] font-bold text-indigo-500 uppercase mb-2 px-2 border-b border-slate-50 dark:border-slate-700/50 pb-1">Navbatdagi bronlar</div>
-                    <div class="max-h-32 overflow-y-auto custom-scrollbar">
-                      <div v-for="b in table.bookings" :key="b._id" class="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors">
-                        <span class="text-[10px] font-bold text-slate-700 dark:text-slate-200 truncate pr-2">{{ b.client_name || 'Mijoz' }}</span>
-                        <span class="text-[9px] font-black opacity-50">{{ new Date(b.booking_time).getHours() }}:{{ String(new Date(b.booking_time).getMinutes()).padStart(2, '0') }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex flex-col items-center justify-center my-2 z-10">
-              <div v-if="getActiveBookingTimer(table)" class="flex flex-col items-center">
-                <div class="text-[9px] font-black uppercase text-rose-500 tracking-widest mb-1 animate-pulse">Bron kelmoqda</div>
-                <div class="text-2xl font-black font-mono tracking-tighter text-rose-600 dark:text-rose-400">
-                  {{ getActiveBookingTimer(table) }}
-                </div>
-              </div>
-              
-              <div v-else :class="['w-16 h-16 rounded-[24px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm', getStatusTheme(table).iconBox]">
-                <ion-icon :icon="getStatusIcon(table.status)" class="text-2xl" />
-              </div>
-            </div>
-
-            <div class="flex items-end justify-between z-10">
-              <div v-if="['1', '3'].includes(table.status)">
-                <p class="text-[9px] font-bold opacity-40 uppercase leading-none mb-1.5">Jami hisob</p>
-                <div :class="['text-base font-black tracking-tight', getStatusTheme(table).text]">
-                  {{ table.total?.toLocaleString() }} <span class="text-[10px] font-medium opacity-60">UZS</span>
-                </div>
-              </div>
-              <div v-else class="flex items-center gap-2 text-slate-400 dark:text-slate-500">
-                <i class="fa-solid fa-users text-[11px]"></i>
-                <span class="text-[11px] font-bold">{{ table.capacity || 4 }} kishilik</span>
-              </div>
-
-              <ActionMenu 
-                :items="getTableActions(table)" 
-                @click.stop 
-                class="opacity-30 hover:opacity-100 transition-opacity p-1"
-              />
             </div>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div v-else >
-         <LoadingState 
-            title="Stollar yuklanmoqda..." 
-            description="Iltimos, biroz kuting." 
-            
-          />
+    <div class="flex flex-col items-center justify-center my-2 z-10">
+      <div v-if="getActiveBookingTimer(table)" class="flex flex-col items-center">
+        <div class="text-[9px] font-black uppercase text-rose-500 tracking-widest mb-1 animate-pulse">Bron kelmoqda</div>
+        <div class="text-2xl font-black font-mono tracking-tighter text-rose-600 dark:text-rose-400">
+          {{ getActiveBookingTimer(table) }}
         </div>
+      </div>
+      
+      <div v-else :class="['w-16 h-16 rounded-[24px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm', getStatusTheme(table).iconBox]">
+        <ion-icon :icon="getStatusIcon(table.status)" class="text-2xl" />
+      </div>
+    </div>
+
+    <div class="flex items-end justify-between z-10">
+      <div v-if="['1', '3','2'].includes(String(table.status)) && table.cartId">
+        <p class="text-[9px] font-bold opacity-40 uppercase leading-none mb-1.5">Jami hisob</p>
+        <div :class="['text-base font-black tracking-tight', getStatusTheme(table).text]">
+          {{ table.cartId?.finalTotal?.toLocaleString() }} 
+          <span class="text-[10px] font-medium opacity-60">UZS</span>
+        </div>
+      </div>
+      <div v-else class="flex items-center gap-2 text-slate-400 dark:text-slate-500">
+        <i class="fa-solid fa-users text-[11px]"></i>
+        <span class="text-[11px] font-bold">{{ table.capacity || 4 }}</span>
+      </div>
+
+      <ActionMenu 
+        :items="getTableActions(table)" 
+        @click.stop 
+        class="opacity-30 hover:opacity-100 transition-opacity p-1"
+      />
+    </div>
+  </div>
+</div>
+
+<div v-else-if="!loading && filteredTables.length === 0">
+  <EmptyState />
+</div>
+
+<div v-else>
+  <LoadingState 
+    title="Stollar yuklanmoqda..." 
+    description="Iltimos, biroz kuting." 
+  />
+</div>
       </div>
     </ion-content>
 
-    <div v-if="isCartOpen && selectedTable && ['1', '3'].includes(selectedTable.status)"> 
+    <div v-if="isCartOpen && selectedTable && ['1', '3','2'].includes(selectedTable.status)"> 
       <CartModal :tableInfo="selectedTable" @close="isCartOpen = false" />
     </div>
     <TableBookingModal />
@@ -130,7 +135,7 @@ import { IonPage, IonContent, IonIcon } from '@ionic/vue';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { storeToRefs } from "pinia";
 
-import { TabelStore } from "../../stores/index.store";
+import { TabelStore,MenuStore} from "../../stores/index.store";
 import { Button, BaseTabs, Header, GlobalRefresher, ActionMenu,EmptyState,LoadingState } from "../../UI/UI";
 import Footer from '../../partials/Footer.vue';
 import Modal from '../../components/Tabel/ActionModal.vue';
@@ -139,17 +144,19 @@ import TableBookingModal from './TableBookingModal.vue';
 
 import { 
   timeOutline, pulseOutline, addOutline, cartOutline, 
-  walletOutline, bookmarkOutline, constructOutline 
+  walletOutline, bookmarkOutline, constructOutline, 
+  
 } from 'ionicons/icons';
 import { Loading } from '../../utils/Loading';
 
 const router = useRouter();
 const store = TabelStore();
-const { tabels } = storeToRefs(store);
+const store_menu = MenuStore();
+const { tabels,selectedTableNumber } = storeToRefs(store);
+const { isCartOpen } = storeToRefs(store_menu);
 
 const searchQuery = ref("");
 const activeStatus = ref('all');
-const isCartOpen = ref(false);
 const selectedTable = ref(null);
 const now = ref(new Date());
 
@@ -239,8 +246,15 @@ const getStatusIcon = (s) => {
 const handleTableClick = async (table) => {
   await Haptics.impact({ style: ImpactStyle.Light });
   selectedTable.value = table;
-  if (table.status === '0') router.push({ name: 'menu' });
-  else if (['1', '3'].includes(table.status)) isCartOpen.value = true;
+
+  if (table.status === '0'){
+    store_menu.selectedTable=table._id
+router.push({ name: 'menu' });
+  } 
+  else if (['1', '2', '3'].includes(table.status)){
+store_menu.setEditOrder(table.cartId)
+isCartOpen.value = true
+  } 
 };
 
 const getTableActions = (table) => [

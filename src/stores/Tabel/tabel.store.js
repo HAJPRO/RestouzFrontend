@@ -11,7 +11,9 @@ export const TabelStore = defineStore('TabelStore', {
     bookingModel: {},
     tableBookings: [],
     tabels: [], // Ma'lumotlarni saqlash uchun
-    loading: false
+    loading: false,
+
+    selectedTableNumber : ""
   }),
 
   actions: {
@@ -31,7 +33,6 @@ export const TabelStore = defineStore('TabelStore', {
     async Create(payload,action) {
       const { toast } = useToast();
       this.loading = true;
-      console.log(action);
       
       try {
         const response = await TabelService.Create(payload,action);

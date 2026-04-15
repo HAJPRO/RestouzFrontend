@@ -52,7 +52,7 @@ const Save = async () => {
 <template>
   <Modal
     v-model="isModal"
-    :title="modalAction === 'edit' ? 'Stolni tahrirlash' : 'Yangi stol yaratish'"
+    :title="modalAction === 'edit' ? 'Stolni tahrirlash' : 'Yangi stol'"
     :icon="modalAction === 'edit' ? 'fa-solid fa-edit' : 'fa-solid fa-plus'"
   >
     <!-- <div class="sticky top-[-24px] z-50 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 p-4 mb-6 -mx-2">
@@ -162,7 +162,7 @@ const Save = async () => {
         size="sm"
         leftIcon="fas fa-check"
         >
-          {{ modalAction === 'edit' ? 'O\'zgartirishlarni saqlash' : 'Stolni yaratish' }}
+          {{ modalAction === 'edit' ? 'O\'zgartirish' : 'Saqlash' }}
         </Button>
       </div>
     </template>

@@ -5,10 +5,7 @@
         icon="fas fa-filter"
         size="sm"
         @click="openDrawer"
-        :class="[
-          '!rounded-xl transition-all duration-300 active:scale-90',
-          isSelected ? '!bg-indigo-50 !text-indigo-600 dark:!bg-indigo-500/20 dark:!text-indigo-400' : '!text-slate-500'
-        ]"
+        
       />
       
       <span 

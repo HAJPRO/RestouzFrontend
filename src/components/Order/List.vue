@@ -98,7 +98,7 @@
               </div>
               <div class="flex justify-between text-[10px] font-black text-indigo-500 uppercase tracking-widest">
                 <span>Xizmat haqi</span>
-                <span>+{{ order.serviceFee.toLocaleString() }}</span>
+                <span>+{{ order.serviceFeeAmount.toLocaleString() }}</span>
               </div>
               <div v-if="order.discountAmount > 0" class="flex justify-between text-[10px] font-black text-rose-500 uppercase tracking-widest italic">
                 <span>Chegirma</span>
@@ -200,9 +200,195 @@ const formatDate = (dateStr) => {
   });
 };
 
-const handlePrint = async (order) => {
-  await Haptics.impact({ style: ImpactStyle.Medium });
-  console.log("Printing:", order._id);
+
+
+const handlePrint = async (orderData, userConfig = null, connectedDevice = null) => {
+  const config = userConfig || { fields: { storeName: { value: 'SAFY MILK' } }, footerMessage: 'Rahmat!' };
+  
+  // 1. STRATEGIYA: Bluetooth yoki USB (Real qurilma ulangan bo'lsa)
+  if (connectedDevice && connectedDevice.type) {
+    console.log("Mobil Printer orqali chop etish...");
+    
+    // Sizning ishlayotgan printReceipt kodingizni bu yerga joylaymiz
+    const ESC = "\x1B";
+    const INIT_CODEPAGE = ESC + "t" + "\x12"; 
+    const RESET = ESC + "@";
+    const CENTER = ESC + "a" + "\x01";
+    
+    let printData = RESET + INIT_CODEPAGE + CENTER;
+    printData += (config.fields.storeName.value || "SAFY MILK").toUpperCase() + "\n";
+    // ... (qolgan mahsulotlar logikasi sizniki bilan bir xil) ...
+    printData += "\n\n\n\n\n";
+
+    const encoder = new TextEncoder();
+    const uint8res = encoder.encode(printData);
+
+    if (connectedDevice.type === 'Bluetooth' && window.bluetoothSerial) {
+      window.bluetoothSerial.write(uint8res, 
+        () => console.log("Bluetooth: Chop etildi"), 
+        (err) => alert("Bluetooth xatosi: " + err)
+      );
+      return; // Ishni yakunlash
+    } else if (connectedDevice.type === 'USB' && window.UsbSerial) {
+      await window.UsbSerial.write({ data: printData });
+      return;
+    }
+  }
+
+  // 2. STRATEGIYA: Web Brauzer (Iframe orqali)
+  // Agar printer ulanmagan bo'lsa yoki Webda bo'lsak, shu ishlaydi
+  console.log("Brauzer orqali chop etish...");
+  
+  const printHtml = `
+    <html>
+      <head>
+        <style>
+          @page { size: 58mm auto; margin: 0; }
+          body { font-family: 'Arial', sans-serif; width: 54mm; padding: 2mm; font-size: 12px; }
+          .center { text-align: center; }
+          .bold { font-weight: bold; }
+          .hr { border-top: 1px dashed #000; margin: 5px 0; }
+          .row { display: flex; justify-content: space-between; }
+        </style>
+      </head>
+      <body>
+        <div class="center bold">${config.fields.storeName.value}</div>
+        <div class="hr"></div>
+        ${orderData.items.map(item => `
+          <div class="bold">${item.name.toUpperCase()}</div>
+          <div class="row">
+            <span>${item.quantity} x ${item.price.toLocaleString()}</span>
+            <span>${(item.quantity * item.price).toLocaleString()}</span>
+          </div>
+        `).join('')}
+        <div class="hr"></div>
+        <div class="row bold">
+          <span>JAMI:</span>
+          <span>${(orderData.finalTotal || 0).toLocaleString()} UZS</span>
+        </div>
+        <div class="center" style="margin-top: 15px;">${config.footerMessage}</div>
+      </body>
+    </html>
+  `;
+
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+  iframe.contentWindow.document.write(printHtml);
+  iframe.contentWindow.document.close();
+
+  iframe.onload = () => {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+    setTimeout(() => iframe.remove(), 1000);
+  };
+};
+
+/**
+ * Termal printerlar uchun Raw Data (ESC/POS) yuborish
+ */
+const executeRawMobilePrint = async (order, config, device) => {
+  const ESC = "\x1B";
+  const encoder = new TextEncoder();
+  
+  let p = ESC + "@"; // Reset
+  p += ESC + "t" + "\x12"; // Codepage PC852 (O'zbek/Lotin)
+  p += ESC + "a" + "\x01"; // Center
+  p += ESC + "E" + "\x01"; // Bold ON
+  p += (config.fields?.storeName?.value || "SAFY MILK").toUpperCase() + "\n";
+  p += ESC + "E" + "\x00" + "\n"; // Bold OFF
+  
+  p += ESC + "a" + "\x00"; // Left
+  order.items.forEach(item => {
+    const name = item.name.toUpperCase().substring(0, 32);
+    const details = `${item.quantity} x ${item.price.toLocaleString()}`;
+    const total = (item.quantity * item.price).toLocaleString();
+    const spaces = " ".repeat(Math.max(1, 32 - details.length - total.length));
+    p += `${name}\n${details}${spaces}${total}\n`;
+  });
+  
+  p += "--------------------------------\n";
+  p += ESC + "a" + "\x02" + ESC + "E" + "\x01"; // Right + Bold
+  p += `JAMI: ${(order.finalTotal || 0).toLocaleString()} UZS\n`;
+  p += "\n" + ESC + "a" + "\x01" + config.footerMessage + "\n\n\n\n\n";
+
+  const binary = encoder.encode(p);
+
+  if (device.type === 'Bluetooth' && window.bluetoothSerial) {
+    return new Promise((resolve, reject) => {
+      window.bluetoothSerial.write(binary, resolve, reject);
+    });
+  } else if (device.type === 'USB' && window.UsbSerial) {
+    return await window.UsbSerial.write({ data: binary });
+  }
+};
+
+/**
+ * Tizim darajasidagi Print oynasini ochish (Web/Mobile)
+ */
+const executeSystemPrint = (order, config, isMobile) => {
+  const html = `
+    <html>
+      <head>
+        <style>
+          @page { size: 58mm auto; margin: 0; }
+          body { 
+            font-family: 'Courier New', monospace; 
+            width: 54mm; padding: 4mm 2mm; margin: 0; 
+            font-size: 11px; line-height: 1.2;
+          }
+          .center { text-align: center; }
+          .bold { font-weight: bold; }
+          .flex { display: flex; justify-content: space-between; }
+          .divider { border-top: 1px dashed #000; margin: 5px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="center bold" style="font-size: 14px;">${config.fields.storeName.value}</div>
+        <div class="divider"></div>
+        <div>CHEK: #${order._id?.slice(-6).toUpperCase() || 'YANGI'}</div>
+        <div>SANA: ${new Date().toLocaleString('uz-UZ')}</div>
+        <div class="divider"></div>
+        ${order.items.map(i => `
+          <div class="bold">${i.name.toUpperCase()}</div>
+          <div class="flex">
+            <span>${i.quantity} x ${i.price.toLocaleString()}</span>
+            <span>${(i.quantity * i.price).toLocaleString()}</span>
+          </div>
+        `).join('')}
+        <div class="divider"></div>
+        <div class="flex bold" style="font-size: 13px;">
+          <span>JAMI:</span>
+          <span>${(order.finalTotal || 0).toLocaleString()} UZS</span>
+        </div>
+        <div class="center" style="margin-top: 15px;">${config.footerMessage}</div>
+      </body>
+    </html>
+  `;
+
+  // APK muhiti uchun maxsus tekshiruv
+  if (isMobile && window.cordova?.plugins?.printer) {
+    window.cordova.plugins.printer.print(html, { name: 'OrderPrint' });
+  } else {
+    // Web brauzer yoki standart WebView uchun
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = "position:fixed;visibility:hidden;bottom:0;right:0;width:0;height:0;";
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    iframe.onload = () => {
+      // WebView ichida setTimeout juda muhim
+      setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        setTimeout(() => iframe.remove(), 2000);
+      }, 500);
+    };
+  }
 };
 
 onMounted(() => {

@@ -53,6 +53,11 @@ const MenuService = {
       }
     });
     },
+    UpdateOrder(payload){
+      console.log(payload)
+        const url = "menu/order/update";
+        return api.post(url, payload)
+    }
   
     
 
