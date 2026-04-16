@@ -194,7 +194,7 @@ const onSave = async () => {
           @click="onSave"
           size="sm"
           left-icon="fas fa-check"
-          loading
+          
 
         >
           {{ modalAction.action === 'edit' ? 'Yangilash' : 'Saqlash' }}

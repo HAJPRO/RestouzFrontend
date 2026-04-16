@@ -63,7 +63,7 @@
                 </div>
                 <div class="text-right">
                   <p class="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-tighter">Maoshi</p>
-                  <p class="text-sm font-black text-emerald-600 dark:text-emerald-400">
+                  <p class="text-[10px] font-black text-emerald-600 dark:text-emerald-400">
                     {{ formatCurrency(user.salary) }}
                   </p>
                 </div>

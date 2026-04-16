@@ -1,57 +1,70 @@
 <script setup>
-import { computed, useSlots } from 'vue';
-import { AuthStore } from '../stores/Auth/auth';
+import { computed } from 'vue';
+import { jwtDecode } from 'jwt-decode';
 
 const props = defineProps({
   roles: { type: [String, Array], default: null },
-  permission: { type: [String, Array], default: null },
-  mode: { type: String, default: 'hide' }
+  permissions: { type: [String, Array], default: null },
+  mode: { type: String, default: 'hide' } // 'hide' yoki 'disable'
 });
 
-const auth = AuthStore();
-const slots = useSlots();
-
 const hasAccess = computed(() => {
-  console.log("Guard tekshiruvni boshladi..."); // SHU YERGA QO'SHING
-  // 1. Foydalanuvchi ma'lumotlari yuklanmagan bo'lsa rad etish
-  if (!auth.user || !auth.user.roles) return false;
-  let roleOk = true;
-  let permOk = true;
+  const token = localStorage.getItem("token");
+  if (!token) return false;
 
-  // 2. Rollarni tekshirish (String formatiga o'girib solishtirish)
-  if (props.roles) {
-    console.log(props.roles)
-    const allowed = Array.isArray(props.roles) ? props.roles.map(String) : [String(props.roles)];
-    const userRoles = auth.user.roles.map(String);
-    roleOk = allowed.some(r => userRoles.includes(r));
-  }
-
-  // 3. Permissionni tekshirish
- if (props.permission) {
-  const requiredPerms = Array.isArray(props.permission) 
-    ? props.permission.map(String) 
-    : [String(props.permission)];
+  try {
+    const user = jwtDecode(token);
     
-  const userPermissions = auth.user.permissions.map(String);
-  
-  // OR logic: permissionlardan biri bo'lsa yetarli
-  permOk = requiredPerms.some(p => userPermissions.includes(p));
-}
+    if (!user || !Array.isArray(user.roles)) return false;
 
-  return roleOk && permOk;
+    const userRoles = [];
+    const userPermissions = new Set();
+
+    // Token ichidagi rollar va permissionlarni yig'ish
+    user.roles.forEach(role => {
+      // Rolning o'zi yoki .value maydoni (ID)
+      const rVal = (role && typeof role === 'object') ? role.value : role;
+      if (rVal) userRoles.push(String(rVal));
+
+      // Rol ichidagi permissionlarning .value maydoni
+      const perms = (role && typeof role === 'object') ? role.permissions : [];
+      if (Array.isArray(perms)) {
+        perms.forEach(p => {
+          const pVal = (p && typeof p === 'object') ? p.value : p;
+          if (pVal) userPermissions.add(String(pVal));
+        });
+      }
+    });
+
+    // 1. ROOT CHECK: Agar foydalanuvchi roli '1' bo'lsa, hamma narsaga ruxsat
+    if (userRoles.includes('1')) return true;
+
+    // 2. ROLE CHECK
+    let roleOk = true;
+    if (props.roles) {
+      const required = Array.isArray(props.roles) ? props.roles.map(String) : [String(props.roles)];
+      roleOk = required.some(r => userRoles.includes(r));
+    }
+
+    // 3. PERMISSION CHECK
+    let permOk = true;
+    if (props.permissions) {
+      const required = Array.isArray(props.permissions) ? props.permissions.map(String) : [String(props.permissions)];
+      permOk = required.some(p => userPermissions.has(p));
+    }
+
+    return roleOk && permOk;
+  } catch (e) {
+    return false;
+  }
 });
 </script>
 
 <template>
-  <template v-if="slots.default">
-    <template v-if="mode === 'hide'">
-      <slot v-if="hasAccess" />
-    </template>
-
-    <template v-else>
-      <div :class="{ 'opacity-50 pointer-events-none cursor-not-allowed select-none': !hasAccess }">
-        <slot :disabled="!hasAccess" />
-      </div>
-    </template>
-  </template>
+  <div v-if="hasAccess" class="guard-wrapper">
+    <slot />
+  </div>
+  <div v-else-if="mode === 'disable'" class="guard-disabled opacity-50 pointer-events-none grayscale">
+    <slot />
+  </div>
 </template>

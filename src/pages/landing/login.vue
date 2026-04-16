@@ -127,7 +127,7 @@
             <Input 
               iconPre="fas fa-server"
               clearable
-              v-model="loginForm.server"
+              v-model="loginForm.companyCode"
               placeholder="Zavod serveri"
               class="custom-input"
             />
@@ -265,7 +265,7 @@ const toggleTheme = async () => {
 
 // loginForm'ni to'g'irlangan holati
 const loginForm = reactive({
-  server: '',
+  companyCode: '',
   username: '',
   password: ''
 });
@@ -273,7 +273,7 @@ const loginForm = reactive({
 // handleManualLogin funksiyasini biroz kengaytiramiz
 const handleManualLogin = async () => {
   // 1. Validatsiya
-  if (!loginForm.server || !loginForm.username || !loginForm.password) {
+  if (!loginForm.companyCode || !loginForm.username || !loginForm.password) {
     await triggerHaptic(ImpactStyle.Medium);
     return showAlert("Xatolik", "Barcha maydonlarni to'ldiring", 'error');
   }

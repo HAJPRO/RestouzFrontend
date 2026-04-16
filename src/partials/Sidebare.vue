@@ -32,13 +32,11 @@
               custom
               v-slot="{ navigate, isActive }"
             >
-              <button
-                @click="handleNavigate(navigate)"
+              <button @click="handleNavigate(navigate)"
                 :class="[
                   'w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 relative group',
                   isActive ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5'
-                ]"
-              >
+                ]">
                 <div v-if="isActive" class="absolute left-0 w-1 h-6 bg-indigo-600 rounded-r-full"></div>
                 <ion-icon :icon="isActive ? item.activeIcon : item.icon" class="text-xl" />
                 <span class="flex-1 text-left text-sm font-bold tracking-tight">{{ item.label }}</span>
@@ -55,7 +53,7 @@
                 class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
                 <ion-icon :icon="peopleOutline" class="text-xl opacity-70" />
                 <span class="flex-1 text-left text-sm font-bold">Xodimlar</span>
-                <ion-icon :icon="chevronDownOutline" :class="{ 'rotate-180': openSections.employee }" class="text-[10px] transition-transform" />
+                <ion-icon :icon="chevronDownOutline" :class="{ 'rotate-180': openSections.staff }" class="text-[10px] transition-transform" />
               </button>
               <transition name="expand">
                 <div v-if="openSections.staff" class="ml-4 pl-8 border-l-2 border-slate-100 dark:border-slate-800 space-y-1">
@@ -85,30 +83,14 @@
             </div>
 
             <div class="space-y-1">
-              <button @click="toggleSection('orders')" 
-                class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
-                <ion-icon :icon="receiptOutline" class="text-xl opacity-70" />
-                <span class="flex-1 text-left text-sm font-bold">Buyurtmalar</span>
-                <ion-icon :icon="chevronDownOutline" :class="{ 'rotate-180': openSections.orders }" class="text-[10px] transition-transform" />
-              </button>
-              <transition name="expand">
-                <div v-if="openSections.orders" class="ml-4 pl-8 border-l-2 border-slate-100 dark:border-slate-800 space-y-1">
-                  <router-link v-for="sub in orderSubs" :key="sub.routeName" :to="{ name: sub.routeName }" @click="closeMenuOnly"
-                    class="flex items-center gap-3 py-2.5 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-all">
-                    <ion-icon :icon="sub.icon" class="text-[14px]" /> {{ sub.label }}
-                  </router-link>
-                </div>
-              </transition>
-            </div>
-   <div class="space-y-1">
-              <button @click="toggleSection('inventory')" 
+              <button @click="toggleSection('tmo')" 
                 class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
                 <ion-icon :icon="layersOutline" class="text-xl opacity-70" />
                 <span class="flex-1 text-left text-sm font-bold">TMO</span>
-                <ion-icon :icon="chevronDownOutline" :class="{ 'rotate-180': openSections.inventory }" class="text-[10px] transition-transform" />
+                <ion-icon :icon="chevronDownOutline" :class="{ 'rotate-180': openSections.tmo }" class="text-[10px] transition-transform" />
               </button>
               <transition name="expand">
-                <div v-if="openSections.inventory" class="ml-4 pl-8 border-l-2 border-slate-100 dark:border-slate-800 space-y-1">
+                <div v-if="openSections.tmo" class="ml-4 pl-8 border-l-2 border-slate-100 dark:border-slate-800 space-y-1">
                   <router-link v-for="sub in tmoSubs" :key="sub.routeName" :to="{ name: sub.routeName }" @click="closeMenuOnly"
                     class="flex items-center gap-3 py-2.5 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-all">
                     <ion-icon :icon="sub.icon" class="text-[14px]" /> {{ sub.label }}
@@ -116,6 +98,7 @@
                 </div>
               </transition>
             </div>
+
             <div class="space-y-1">
               <button @click="toggleSection('inventory')" 
                 class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
@@ -135,23 +118,31 @@
           </div>
 
           <div class="space-y-1">
-            <p class="px-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-4">Sozlamalar</p>
-            <div class="space-y-1">
-              <button @click="toggleSection('settings')" 
-                class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
-                <ion-icon :icon="settingsOutline" class="text-xl opacity-70" />
-                <span class="flex-1 text-left text-sm font-bold">Tizim sozlamalari</span>
-                <ion-icon :icon="chevronDownOutline" :class="{ 'rotate-180': openSections.settings }" class="text-[10px] transition-transform" />
-              </button>
-              <transition name="expand">
-                <div v-if="openSections.settings" class="ml-4 pl-8 border-l-2 border-slate-100 dark:border-slate-800 space-y-1">
-                  <router-link v-for="sub in staffSubs" :key="sub.routeName" :to="{ name: sub.routeName }" @click="closeMenuOnly"
-                    class="flex items-center gap-3 py-2.5 text-[12px] font-bold text-slate-500 hover:text-indigo-600 transition-all">
-                    <ion-icon :icon="sub.icon" class="text-[14px]" /> {{ sub.label }}
-                  </router-link>
+            <Guard :roles="['1000']">
+              <div class="guard-wrapper">
+                <p class="px-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-4">Sozlamalar</p>
+                <div class="space-y-1">
+                  <button @click="toggleSection('settings')" 
+                    class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
+                    <ion-icon :icon="settingsOutline" class="text-xl opacity-70" />
+                    <span class="flex-1 text-left text-sm font-bold">Tizim sozlamalari</span>
+                    <ion-icon :icon="chevronDownOutline" :class="{ 'rotate-180': openSections.settings }" class="text-[10px] transition-transform" />
+                  </button>
+                  <transition name="expand">
+                    <div v-if="openSections.settings" class="ml-4 pl-8 border-l-2 border-slate-100 dark:border-slate-800 space-y-1">
+                      <template v-for="sub in staffSubs" :key="sub.routeName">
+                        <Guard :roles="sub.roles" :permissions="sub.permissions">
+                          <router-link :to="{ name: sub.routeName }" @click="closeMenuOnly"
+                            class="flex items-center gap-3 py-2.5 text-[12px] font-bold text-slate-500 hover:text-indigo-600 transition-all">
+                            <ion-icon :icon="sub.icon" class="text-[14px]" /> {{ sub.label }}
+                          </router-link>
+                        </Guard>
+                      </template>
+                    </div>
+                  </transition>
                 </div>
-              </transition>
-            </div>
+              </div>
+            </Guard>
           </div>
         </nav>
 
@@ -168,29 +159,22 @@
 
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
 import { IonMenu, IonContent, IonIcon, menuController, IonMenuToggle } from "@ionic/vue";
 import {
   restaurant, flame, trophy, trophyOutline, time, timeOutline, logOutOutline,
   chevronBackOutline, archiveOutline, chevronDownOutline, peopleOutline,
-  cartOutline, receiptOutline, settingsOutline, ribbonOutline, shieldCheckmarkOutline,
-  cubeOutline, clipboardOutline, listOutline, personOutline, swapVerticalOutline, printOutline,
-  cashOutline,
-  layersOutline,
-  briefcaseOutline
+  cartOutline, settingsOutline, ribbonOutline, shieldCheckmarkOutline,
+  cubeOutline, personOutline, swapVerticalOutline, printOutline,
+  cashOutline, layersOutline, briefcaseOutline
 } from "ionicons/icons";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
-const router = useRouter();
-
-// Bo'limlarning ochilish holati
 const openSections = ref({
   staff: false,
   supply: false,
-  orders: false,
   inventory: false,
-  settings: false,
-  employee : false
+  tmo: false,
+  settings: false
 });
 
 const menuItems = [
@@ -200,45 +184,33 @@ const menuItems = [
 ];
 
 const staffSubs = [
-  { label: "Foydalanuvchilar", routeName: "settingsusers", icon: personOutline },
-  { label: "Rollar", routeName: "settingsroles", icon: ribbonOutline },
-  { label: "Ruxsatlar", routeName: "settingspermissions", icon: shieldCheckmarkOutline },
+  { label: "Foydalanuvchilar", routeName: "settingsusers", icon: personOutline, roles: ['1000'] },
+  { label: "Rollar", routeName: "settingsroles", icon: ribbonOutline, roles: ['1000'] },
+  { label: "Ruxsatlar", routeName: "settingspermissions", icon: shieldCheckmarkOutline, roles: ['1000'] },
   { label: "Chek sozlamalari", routeName: "check", icon: printOutline },
-
 ];
+
 const employeeSubs = [
   { label: "Xodimlar", routeName: "employee", icon: personOutline },
-  { label: "Rollar", routeName: "settingsroles", icon: ribbonOutline },
-  { label: "Ruxsatlar", routeName: "settingspermissions", icon: shieldCheckmarkOutline },
-  { label: "Chek sozlamalari", routeName: "check", icon: printOutline },
-
 ];
+
 const supplySubs = [
   { label: "Xaridlar", routeName: "home", icon: cartOutline },
   { label: "Yetkazib beruvchilar", routeName: "home", icon: peopleOutline },
-];
-
-const orderSubs = [
-  { label: "Aktiv buyurtmalar", routeName: "home", icon: flame },
-  { label: "Barcha buyurtmalar", routeName: "home", icon: listOutline },
 ];
 
 const inventorySubs = [
   { label: "Mahsulotlar", routeName: "menu", icon: cubeOutline },
   { label: "Kirim-chiqim", routeName: "statistic", icon: swapVerticalOutline },
 ];
+
 const tmoSubs = [
   { label: "Mahsulotlar", routeName: "menu", icon: cubeOutline },
   { label: "Kirim-chiqim", routeName: "statistic", icon: swapVerticalOutline },
   { label: "Sotuv qilish", routeName: "statistic", icon: cashOutline },
 ];
 
-const settingsSubs = [
-  { label: "Tizim sozlamasi", routeName: "check", icon: settingsOutline },
-];
-
 const toggleSection = async (section) => {
-  // Boshqa hamma bo'limlarni yopish (Accordion effect)
   Object.keys(openSections.value).forEach(key => {
     if (key !== section) openSections.value[key] = false;
   });
@@ -270,18 +242,11 @@ const hapticImpact = async (style) => {
 </script>
 
 <style scoped>
-.custom-sidebar {
-  --width: 310px;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-/* Accordion Animation */
+.custom-sidebar { --width: 310px; }
+.custom-scrollbar::-webkit-scrollbar { display: none; }
 .expand-enter-active, .expand-leave-active {
   transition: all 0.3s ease-in-out;
-  max-height: 250px;
+  max-height: 350px;
   overflow: hidden;
 }
 .expand-enter-from, .expand-leave-to {
@@ -289,8 +254,6 @@ const hapticImpact = async (style) => {
   opacity: 0;
   transform: translateY(-10px);
 }
-
-/* Mobile Safe Areas */
 header { padding-top: calc(env(safe-area-inset-top) + 1rem); }
 footer { padding-bottom: calc(env(safe-area-inset-bottom) + 1rem); }
 </style>

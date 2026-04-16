@@ -44,9 +44,7 @@ export const AuthStore = defineStore("AuthStore", {
 
                     // 2. Ma'lumotlarni saqlash
                     localStorage.setItem("token", token);
-
-                    // Agar jwtDecode ishlatilsa, tokendan foydalanuvchi ma'lumotlarini olamiz
-                    // Lekin backend user ob'ektini qaytarsa, undan foydalanish aniqroq (roles, permissions)
+                    // localStorage.setItem('user', JSON.stringify(userData));
                     this.user = userData || jwtDecode(token);
                     this.isAuthenticated = true;
 
@@ -89,7 +87,7 @@ export const AuthStore = defineStore("AuthStore", {
 
             // Avval o'chirishni bajaramiz
             localStorage.removeItem("token");
-            localStorage.removeItem("account");
+            localStorage.removeItem("user");
 
             console.log("LocalStorage tozalandi. Token hozir:", localStorage.getItem("token"));
 

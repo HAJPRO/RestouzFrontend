@@ -16,9 +16,9 @@ export const UserStore = defineStore("UserStore", {
     async GetAll(payload) {
       try {
         const res = await UserService.GetAll();
-        console.log("GetAll Response:", res);
         if (res.status === 200) {
-          this.users = res.data;
+          this.users = res.data.data;
+          
           return true; 
         } else {
           toast.error("Foydalanuvchilarni olishda xatolik yuz berdi");
