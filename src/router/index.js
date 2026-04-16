@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from '@ionic/vue-router';
+import { createRouter, createWebHashHistory } from '@ionic/vue-router';
 import ExploreView from '../layouts/ExploreView.vue';
 import LandingView from '../layouts/LandingView.vue';
 
@@ -7,16 +7,26 @@ const routes = [
     path: '/landing',
     component: LandingView,
     children: [
-      { path: '', redirect: '/landing/login' },
-      { path: 'login', name: 'login', component: () => import('../pages/landing/login.vue') },
+      { 
+        path: '', 
+        redirect: '/landing/login' 
+      },
+      { 
+        path: 'login', 
+        name: 'login', 
+        component: () => import('../pages/landing/login.vue') 
+      },
     ],
-    meta: { guestOnly: true } // Faqat mehmonlar (tizimga kirmaganlar) uchun
+    meta: { guestOnly: true }
   },
   {
     path: '/explore',
     component: ExploreView,
     children: [
-      { path: '', redirect: '/explore/home' }, // To'g'ri pathga redirect
+      { 
+        path: '', 
+        redirect: '/explore/home' 
+      },
       { path: 'home', name: 'home', component: () => import('../pages/explore/Home/index.vue') },
       { path: 'statistic', name: 'statistic', component: () => import('../pages/explore/Dashboard/sale/index.vue') },
       { path: 'menu', name: 'menu', component: () => import('../pages/explore/Menu/index.vue') },
@@ -29,32 +39,50 @@ const routes = [
       { path: 'settings/roles', name: 'settingsroles', component: () => import('../pages/explore/Settings/role/index.vue') },
       { path: 'settings/permissions', name: 'settingspermissions', component: () => import('../pages/explore/Settings/permission/index.vue') },
     ],
-    meta: { requiresAuth: true } // Avtorizatsiya talab qilinadigan sahifalar
+    meta: { requiresAuth: true }
   },
-  { path: '/', redirect: '/explore/home' },
-  { path: '/:pathMatch(.*)*', redirect: '/landing/login' }
+  { 
+    path: '/', 
+    redirect: '/explore/home' 
+  },
+  { 
+    path: '/:pathMatch(.*)*', 
+    redirect: '/landing/login' 
+  }
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  // MUHIM: Mobile APK uchun createWebHashHistory ishlatish shart!
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes
 });
 
-// --- NAVIGATION GUARD QISMI ---
+// --- NAVIGATION GUARD ---
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token');
   const user = localStorage.getItem('user');
-  const isAuthenticated = token && user;
 
-  // 1. Agar sahifa login talab qilsa va user kirmagan bo'lsa
-  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    next('/landing/login');
+  // String shaklidagi "undefined" yoki "null" larni tekshirish uchun !! ishlatamiz
+  // localStorage-dan olingan ma'lumot haqiqatda borligini tekshirish
+  const isAuthenticated = !!(token && user && token !== 'undefined' && user !== 'undefined');
+
+  // 1. Avtorizatsiya talab qilinadigan sahifaga kirmoqchi bo'lsa
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!isAuthenticated) {
+      next({ name: 'login' });
+    } else {
+      next(); // Yo'lida davom etadi
+    }
   } 
-  // 2. Agar user kirgan bo'lsa va login sahifasiga o'tmoqchi bo'lsa
-  else if (to.matched.some(record => record.meta.guestOnly) && isAuthenticated) {
-    next('/explore/home');
+  // 2. Kirgan foydalanuvchi login sahifasiga o'tmoqchi bo'lsa
+  else if (to.matched.some(record => record.meta.guestOnly)) {
+    if (isAuthenticated) {
+      next({ name: 'home' });
+    } else {
+      next(); // Yo'lida davom etadi
+    }
   } 
-  // 3. Qolgan holatlarda yo'lida davom etaveradi
+  // 3. Qolgan sahifalar uchun
   else {
     next();
   }
