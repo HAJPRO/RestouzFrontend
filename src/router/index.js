@@ -23,6 +23,8 @@ const routes = [
       { path: 'tables', name: 'tables', component: () => import('../pages/explore/Tabels/index.vue') },
       { path: 'profile', name: 'profile', component: () => import('../pages/explore/Profile/index.vue') },
       { path: 'check', name: 'check', component: () => import('../pages/explore/Check/index.vue') },
+//HR
+      { path: 'employee', name: 'employee', component: () => import('../pages/explore/HR/Employee/index.vue') },
 
       // Settings bo'limi
       { path: 'settings/users', name: 'settingsusers', component: () => import('../pages/explore/Settings/users/index.vue') },

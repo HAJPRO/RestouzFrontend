@@ -55,11 +55,11 @@
                 class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
                 <ion-icon :icon="peopleOutline" class="text-xl opacity-70" />
                 <span class="flex-1 text-left text-sm font-bold">Xodimlar</span>
-                <ion-icon :icon="chevronDownOutline" :class="{ 'rotate-180': openSections.staff }" class="text-[10px] transition-transform" />
+                <ion-icon :icon="chevronDownOutline" :class="{ 'rotate-180': openSections.employee }" class="text-[10px] transition-transform" />
               </button>
               <transition name="expand">
                 <div v-if="openSections.staff" class="ml-4 pl-8 border-l-2 border-slate-100 dark:border-slate-800 space-y-1">
-                  <router-link v-for="sub in staffSubs" :key="sub.routeName" :to="{ name: sub.routeName }" @click="closeMenuOnly"
+                  <router-link v-for="sub in employeeSubs" :key="sub.routeName" :to="{ name: sub.routeName }" @click="closeMenuOnly"
                     class="flex items-center gap-3 py-2.5 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-all">
                     <ion-icon :icon="sub.icon" class="text-[14px]" /> {{ sub.label }}
                   </router-link>
@@ -189,7 +189,8 @@ const openSections = ref({
   supply: false,
   orders: false,
   inventory: false,
-  settings: false
+  settings: false,
+  employee : false
 });
 
 const menuItems = [
@@ -205,7 +206,13 @@ const staffSubs = [
   { label: "Chek sozlamalari", routeName: "check", icon: printOutline },
 
 ];
+const employeeSubs = [
+  { label: "Xodimlar", routeName: "employee", icon: personOutline },
+  { label: "Rollar", routeName: "settingsroles", icon: ribbonOutline },
+  { label: "Ruxsatlar", routeName: "settingspermissions", icon: shieldCheckmarkOutline },
+  { label: "Chek sozlamalari", routeName: "check", icon: printOutline },
 
+];
 const supplySubs = [
   { label: "Xaridlar", routeName: "home", icon: cartOutline },
   { label: "Yetkazib beruvchilar", routeName: "home", icon: peopleOutline },
