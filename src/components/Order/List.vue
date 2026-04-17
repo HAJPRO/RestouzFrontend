@@ -8,8 +8,7 @@
     >
       <template #actions>
         <div class="flex gap-2">
-                <Button  icon="fas fa-list" size="sm" />
-
+                <Button @click="datePicter()"  icon="fas fa-list" size="sm" />
           <div class="relative">
             <Button @click="store_order.isCartOpen = true" icon="fas fa-shopping-basket" size="sm" />
             <span v-if="orders.length" class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] rounded-full flex items-center justify-center font-black animate-bounce">
@@ -133,6 +132,10 @@
     </ion-content>
 
     <Footer class="z-50" />
+    <div v-if="datePic">
+      <DateRangePicker @selected="handleDateFilter" 
+        @close="isDatePickerOpen = false" />
+        </div>
   </ion-page>
 </template>
 
@@ -141,7 +144,7 @@ import { ref, computed, onMounted } from "vue";
 import { IonPage, IonContent, IonInfiniteScroll, IonInfiniteScrollContent } from "@ionic/vue";
 import { OrderStore } from "../../stores/index.store";
 import { storeToRefs } from "pinia";
-import { Button, Header, GlobalRefresher, EmptyState, LoadingState } from "../../UI/UI";
+import { Button, Header, GlobalRefresher, EmptyState, LoadingState,DateRangePicker} from "../../UI/UI";
 import Footer from "../../partials/Footer.vue";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
@@ -150,7 +153,10 @@ const { orders, loading } = storeToRefs(store_order);
 
 const searchQuery = ref("");
 const activeStatus = ref("all");
-
+const datePic = ref(false)
+const datePicter = ()=>{
+  datePic.value=!datePic.value
+}
 // 1. Dastlabki yuklash va yangilash
 const refreshOrders = async (event) => {
   await Haptics.impact({ style: ImpactStyle.Light });

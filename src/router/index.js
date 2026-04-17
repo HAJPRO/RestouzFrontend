@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from '@ionic/vue-router';
+import { createRouter, createWebHistory,createWebHashHistory } from '@ionic/vue-router';
 import ExploreView from '../layouts/ExploreView.vue';
 import LandingView from '../layouts/LandingView.vue';
 
@@ -60,32 +60,22 @@ const router = createRouter({
 // --- NAVIGATION GUARD ---
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token');
-  const user = localStorage.getItem('user');
+  
+  // Faqat tokenni haqiqiy mavjudligini tekshiramiz
+  const isAuthenticated = !!(token && token !== 'undefined' && token !== 'null');
 
-  // String shaklidagi "undefined" yoki "null" larni tekshirish uchun !! ishlatamiz
-  // localStorage-dan olingan ma'lumot haqiqatda borligini tekshirish
-  const isAuthenticated = !!(token && user && token !== 'undefined' && user !== 'undefined');
-
-  // 1. Avtorizatsiya talab qilinadigan sahifaga kirmoqchi bo'lsa
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!isAuthenticated) {
-      next({ name: 'login' });
-    } else {
-      next(); // Yo'lida davom etadi
-    }
-  } 
-  // 2. Kirgan foydalanuvchi login sahifasiga o'tmoqchi bo'lsa
-  else if (to.matched.some(record => record.meta.guestOnly)) {
-    if (isAuthenticated) {
-      next({ name: 'home' });
-    } else {
-      next(); // Yo'lida davom etadi
-    }
-  } 
-  // 3. Qolgan sahifalar uchun
-  else {
-    next();
+  // 1. Kirgan bo'lsa, login/landing sahifalariga yo'latma
+  if (to.matched.some(record => record.meta.guestOnly) && isAuthenticated) {
+    return next({ name: 'home' });
   }
+
+  // 2. Kirmagan bo'lsa, ichki sahifalarga yo'latma
+  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+    return next({ name: 'login' });
+  }
+
+  // 3. Qolgan holatlarda ruxsat
+  next();
 });
 
 export default router;
