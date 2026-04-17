@@ -134,7 +134,7 @@
     <Footer class="z-50" />
     <div v-if="datePic">
       <DateRangePicker @selected="handleDateFilter" 
-        @close="isDatePickerOpen = false" />
+        @close="datePic = false" />
         </div>
   </ion-page>
 </template>
