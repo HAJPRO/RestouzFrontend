@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { useToast } from "../../UI/utils/useToast";
  const { toast } = useToast();
 import { MenuService } from "../../ApiService/index.service";
-import { TabelStore } from "../../stores/index.store";
+import { TabelStore,FeeStore } from "../../stores/index.store";
 
 export const MenuStore = defineStore('MenuStore', {
   state: () => ({
@@ -31,6 +31,7 @@ export const MenuStore = defineStore('MenuStore', {
     // Tanlovlar
     selectedTable: null,
     selectedStaff: null,
+    selectedCustomer:null,
     orderType: 'table',
     orderComment: '',
   }),
@@ -41,7 +42,15 @@ export const MenuStore = defineStore('MenuStore', {
     
     // Service Fee hisoblash
     calculateServiceFee: (state) => {
-      return state.isServiceActive ? (state.currentSubtotal * state.serviceFeePercent) / 100 : 0;
+      const feeStore = FeeStore(); // Getter ichida store-ni chaqiramiz
+      
+      // Foizni FeeStore-dan olamiz (masalan feeStore.model.percentage)
+      const percentage = feeStore.model?.status === 'active'? feeStore.model?.percentage : 0; 
+
+      if (state.isServiceActive) {
+        return (state.currentSubtotal * percentage) / 100;
+      }
+      return 0;
     },
     
     calculateDiscountAmount: (state) => {
@@ -231,6 +240,7 @@ async Create(payload) {
       // --- Bog'liqliklar va status ---
       comment: this.orderComment,
       staffId: this.selectedStaff?._id || this.selectedStaff,
+      customerId: this.selectedCustomer?._id || this.selectedCustomer,
       status: 'pending'
     };
 
@@ -279,6 +289,7 @@ async Create(payload) {
 
       this.selectedTable = orderData.tableId;
       this.selectedStaff = orderData.staffId;
+      this.selectedCustomer = orderData.customerId;
       this.isCartOpen = true;
     }
   }

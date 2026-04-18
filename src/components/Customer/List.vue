@@ -21,33 +21,49 @@
       
       <div v-else class="max-w-full mx-auto pb-10 p-4">
         
-        <transition name="slide-fade" class="">
+        <transition name="slide-fade">
           <div v-if="toggleStats" class="grid grid-cols-2 gap-3 mb-6">
+            
             <div class="col-span-2 bg-gradient-to-r from-indigo-600 to-violet-600 p-5 rounded-[32px] text-white shadow-lg shadow-indigo-500/20">
               <div class="flex justify-between items-center">
                 <div>
                   <p class="text-[10px] font-bold uppercase tracking-widest opacity-80">Umumiy mijozlar bazasi</p>
-                  <h3 class="text-3xl font-black mt-1">{{ customers.length }} <span class="text-sm font-medium opacity-70">nafar</span></h3>
+                  <h3 class="text-3xl font-black mt-1">
+                    {{ customers.length }} 
+                    <span class="text-sm font-medium opacity-70 ml-1">nafar</span>
+                  </h3>
                 </div>
                 <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
-                  <i class="fas fa-users text-xl"></i>
+                  <i class="fas fa-database text-xl"></i>
                 </div>
               </div>
             </div>
+
             <div class="bg-white dark:bg-slate-900 p-5 rounded-[32px] border border-slate-100 dark:border-white/5 shadow-sm">
-              <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Debitorlik (Qarz)</p>
-              <h3 class="text-xl font-black mt-1 text-rose-500">- {{ totalDebt }}</h3>
+              <div class="flex items-center gap-2 mb-1">
+                <div class="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Debitorlik (Qarz)</p>
+              </div>
+              <h3 class="text-xl font-black text-rose-500">
+                - {{ totalDebt }}
+              </h3>
             </div>
+
             <div class="bg-white dark:bg-slate-900 p-5 rounded-[32px] border border-slate-100 dark:border-white/5 shadow-sm">
-              <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">VIP Mijozlar</p>
-              <h3 class="text-xl font-black mt-1 text-amber-500">{{ vipCount }} <span class="text-xs opacity-50">ta</span></h3>
+              <div class="flex items-center gap-2 mb-1">
+                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Kreditorlik (Haq)</p>
+              </div>
+              <h3 class="text-xl font-black text-emerald-500">
+                + {{ totalCredit }}
+              </h3>
             </div>
           </div>
         </transition>
 
         <div v-if="filteredCustomers.length > 0" class="space-y-2 mt-2">
           <div 
-            v-for="(customer, index) in filteredCustomers" 
+            v-for="customer in filteredCustomers" 
             :key="customer._id"
             class="bg-white dark:bg-slate-900 rounded-[35px] overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm transition-all active:scale-[0.98]"
           >
@@ -87,7 +103,7 @@
                     <div class="text-right">
                       <p 
                         class="text-sm font-black" 
-                        :class="customer.balance < 0 ? 'text-rose-500' : 'text-emerald-500'"
+                        :class="customer.balance < 0 ? 'text-rose-500' : customer.balance > 0 ? 'text-emerald-500' : 'text-slate-400'"
                       >
                         {{ customer.balance?.toLocaleString() }} <span class="text-[10px]">so'm</span>
                       </p>
@@ -131,8 +147,8 @@
                   <i class="fab fa-telegram-plane text-base"></i> TELEGRAM
                 </button>
                 <ActionMenu 
-                 :items="getTableActions(customer)" 
-        @click.stop 
+                  :items="getTableActions(customer)" 
+                  @click.stop 
                   class="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-white/10 text-slate-500 flex items-center justify-center active:rotate-12 transition-all"
                 >
                   <i class="fas fa-ellipsis-h"></i>
@@ -153,23 +169,21 @@ import { ref, computed, onMounted } from "vue";
 import { IonPage, IonContent } from "@ionic/vue";
 import { CustomerStore } from "../../stores/index.store";
 import { storeToRefs } from "pinia";
-import { Button, Header, GlobalRefresher, EmptyState, LoadingState,ActionMenu } from "../../UI/UI";
-import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { Button, Header, GlobalRefresher, EmptyState, LoadingState, ActionMenu } from "../../UI/UI";
+import { vibrate, notify } from "../../utils/index.util";
 
 const store_customer = CustomerStore();
 const { customers, loading } = storeToRefs(store_customer);
 
 const searchQuery = ref("");
 const toggleStats = ref(true);
-const getTableActions = (customer) => [
-   { label: 'Tahrirlash', icon: 'fa-solid fa-pen-to-square', onClick: () => editCustomer(customer) },
-  { label: 'Hisob berish', icon: 'fa-solid fa-calculator', onClick: () => store.Create({_id:customer._id,status:3}, 'edit') },
 
-  { label: 'Bron qo\'shish', icon: 'fa-solid fa-calendar-plus', onClick: () => store.BookingModalAction(customer, 'booked') },
-  { label: 'Ta’mirga olish', icon: 'fa-solid fa-screwdriver-wrench', onClick: () => store.setStatus(customer, 'maintenance') },
-  { label: 'Bekor qilish', icon: 'fa-solid fa-xmark', variant: 'warning', onClick: () => store.setStatus(customer, 'free') },
+const getTableActions = (customer) => [
+  { label: 'Tahrirlash', icon: 'fa-solid fa-pen-to-square', onClick: () => editCustomer(customer) },
+  { label: 'Hisob berish', icon: 'fa-solid fa-calculator', onClick: () => console.log('Calculate', customer._id) },
   { label: 'O\'chirish', icon: 'fa-solid fa-trash', variant: 'danger', onClick: () => {} }
 ];
+
 onMounted(() => store_customer.GetAll());
 
 const filteredCustomers = computed(() => {
@@ -180,12 +194,17 @@ const filteredCustomers = computed(() => {
   );
 });
 
+// Debitorlik (Qarzlar yig'indisi)
 const totalDebt = computed(() => {
   const sum = customers.value.reduce((acc, c) => acc + (c.balance < 0 ? c.balance : 0), 0);
   return Math.abs(sum).toLocaleString();
 });
 
-const vipCount = computed(() => customers.value.filter(c => c.category === 'vip').length);
+// Kreditorlik (Haqlar yig'indisi)
+const totalCredit = computed(() => {
+  const sum = customers.value.reduce((acc, c) => acc + (c.balance > 0 ? c.balance : 0), 0);
+  return sum.toLocaleString();
+});
 
 const getCategoryClass = (cat) => {
   switch(cat) {
@@ -195,30 +214,33 @@ const getCategoryClass = (cat) => {
   }
 };
 
-const formatPhone = (p) => p ? p.replace(/(\d{3})(\d{2})(\d{3})(\d{2})(\d{2})/, "+$1 ($2) $3-$4-$5") : 'Raqamsiz';
-
 const callCustomer = (p) => {
-  Haptics.impact({ style: ImpactStyle.Medium });
-  if (p) window.open(`tel:${p}`, '_system');
+  if (p) {
+    vibrate('medium');
+    const cleanPhone = p.toString().replace(/[^\d+]/g, '');
+    window.open(`tel:${cleanPhone}`, '_system');
+  } else {
+    notify('WARNING');
+  }
 };
 
 const openTelegram = (p) => {
-  Haptics.impact({ style: ImpactStyle.Light });
   if (p) {
-    const cleanPhone = p.replace(/\D/g, '');
+    vibrate('light');
+    const cleanPhone = p.toString().replace(/\D/g, '');
     window.open(`https://t.me/+${cleanPhone}`, '_system');
+  } else {
+    notify('WARNING');
   }
 };
 
 const editCustomer = (customer) => {
-    console.log(customer);
-    
-  Haptics.impact({ style: ImpactStyle.Light });
+  vibrate('light');
   store_customer.ModalAction({ action: 'edit', data: customer });
 };
 
 const openAddModal = () => {
-  Haptics.impact({ style: ImpactStyle.Heavy });
+  vibrate('heavy');
   store_customer.ModalAction({ action: 'create' });
 };
 
@@ -226,19 +248,14 @@ const refreshCustomers = async (e) => {
   await store_customer.GetAll();
   e.target.complete();
 };
-
-const formatDate = (date) => {
-  if (!date) return "Yaqinda";
-  return new Date(date).toLocaleDateString('uz-UZ', { day: '2-digit', month: 'short' });
-};
 </script>
 
 <style scoped>
 .slide-fade-enter-active, .slide-fade-leave-active {
-  transition: all 0.4s ease-out;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .slide-fade-enter-from, .slide-fade-leave-to {
-  transform: translateY(-20px);
+  transform: translateY(-30px);
   opacity: 0;
 }
 </style>

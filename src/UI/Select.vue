@@ -106,7 +106,7 @@ const labelClasses = computed(() => {
   const leftPadding = hasPrefix ? (props.size === 'small' ? 'left-9' : 'left-10') : 'left-4';
 
   return [
-    'absolute font-bold transition-all duration-200 select-none z-10 pointer-events-none tracking-wide uppercase text-[10px]',
+    'absolute font-bold transition-all duration-200 select-none z-10  tracking-wide uppercase text-[10px]',
     'bg-white dark:bg-slate-800 px-1.5 rounded',
     (isOpen.value || hasValue.value)
       ? `-top-2.5 ${leftPadding} text-indigo-600 dark:text-indigo-400`
@@ -305,22 +305,26 @@ onMounted(() => {
                 </div>
              </li>
 
-             <li v-for="opt in filteredOptions" :key="opt[valueKey]" @click="handleSelect(opt)"
-               :class="[
-                 'flex items-center justify-between px-4 py-3 mb-1.5 rounded-2xl cursor-pointer transition-all duration-300 relative overflow-hidden group/item',
-                 isSelected(opt) ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-               ]"
-             >
-               <div class="flex items-center gap-3 z-10 w-full">
-                 <div v-if="multiple" class="w-4 h-4 rounded-md border-2 flex items-center justify-center transition-all shrink-0"
-                   :class="isSelected(opt) ? 'bg-white border-white' : 'border-slate-300 group-hover/item:border-indigo-500'">
-                   <i v-if="isSelected(opt)" class="fa-solid fa-check text-[8px] text-indigo-600 font-black"></i>
-                 </div>
-                 <i v-if="opt[iconKey]" :class="opt[iconKey]" class="opacity-80"></i>
-                 <span class="text-sm font-bold tracking-tight">{{ opt[labelKey] }}</span>
-               </div>
-               <i v-if="!multiple && isSelected(opt)" class="fa-solid fa-circle-check text-white text-lg animate-in zoom-in"></i>
-             </li>
+          <li v-for="opt in filteredOptions" :key="opt[valueKey]" @mousedown.stop.prevent="handleSelect(opt)""
+    :class="[
+      'flex items-center justify-between px-4 py-3 mb-1.5 rounded-2xl cursor-pointer transition-all duration-300 relative overflow-hidden group/item',
+      isSelected(opt) ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+    ]"
+>
+  <div class="flex items-center gap-3 z-10 w-full">
+    <div v-if="multiple" class="w-4 h-4 rounded-md border-2 flex items-center justify-center transition-all shrink-0"
+      :class="isSelected(opt) ? 'bg-white border-white' : 'border-slate-300 group-hover/item:border-indigo-500'">
+      <i v-if="isSelected(opt)" class="fa-solid fa-check text-[8px] text-indigo-600 font-black"></i>
+    </div>
+
+    <slot name="option" :option="opt">
+      <i v-if="opt[iconKey]" :class="opt[iconKey]" class="opacity-80"></i>
+      <span class="text-sm font-bold tracking-tight">{{ opt[labelKey] }}</span>
+    </slot>
+  </div>
+  
+  <i v-if="!multiple && isSelected(opt)" class="fa-solid fa-circle-check text-white text-lg animate-in zoom-in"></i>
+</li>
           </ul>
         </div>
       </transition>

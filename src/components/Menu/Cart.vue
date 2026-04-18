@@ -1,5 +1,6 @@
 <template>
   <ion-page>
+
     <Modal
       v-model="isCartOpen"
       :title="model._id ? 'Buyurtmani Tahrirlash' : 'Savat'"
@@ -61,19 +62,39 @@
 
         <div v-if="activeTab === 'settings'" class="space-y-6 animate-fade-in">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div @click="store_menu.toggleService()" class="bg-slate-50 dark:bg-slate-800/40 rounded-[28px] p-3 flex items-center justify-between border border-slate-100 dark:border-white/5 cursor-pointer hover:bg-slate-100 transition-colors">
+            <div @click="store_menu.toggleService()"  class="bg-slate-50 dark:bg-slate-800/40 rounded-[28px] p-3 flex items-center justify-between border border-slate-100 dark:border-white/5 cursor-pointer hover:bg-slate-100 transition-colors">
               <div class="flex items-center gap-2">
-                <div :class="['w-10 h-10 rounded-xl flex items-center justify-center transition-all', isServiceActive ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-400']">
-                  <i class="fa-solid fa-utensils text-xs"></i>
-                </div>
+              <div 
+  :class="[
+    'w-10 h-10 rounded-xl flex items-center justify-center transition-all', 
+    feeModel.status === 'active' 
+      ? 'bg-indigo-600 text-white cursor-pointer active:scale-95' 
+      : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60 grayscale'
+  ]"
+  :disabled="feeModel.status !== 'active'"
+>
+  <i class="fa-solid fa-utensils text-xs"></i>
+</div>
                 <div>
-                  <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Xizmat (10%)</span>
-                  <p class="text-[13px] font-black dark:text-white">{{ isServiceActive ? calculateServiceFee : "0" }}</p>
+                  <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Xizmat ({{ feeModel.status==='active'?feeModel.percentage:0 }})%</span>
+                  <p class="text-[13px] font-black dark:text-white">{{ feeModel.status==='active' ? calculateServiceFee : "0" }}</p>
                 </div>
               </div>
-              <div :class="['w-11 h-6 rounded-full relative transition-all duration-300', isServiceActive ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-600']">
-                <div :class="['w-4 h-4 bg-white rounded-full absolute top-1 transition-all', isServiceActive ? 'right-1' : 'left-1']"></div>
-              </div>
+             <div 
+  @click="feeModel.status === 'active' && (isServiceActive = !isServiceActive)"
+  :class="[
+    'w-11 h-6 rounded-full relative transition-all duration-300', 
+    // Faol holat ranglari
+    feeModel.status === 'active' 
+      ? (isServiceActive ? 'bg-indigo-600 cursor-pointer' : 'bg-slate-300 dark:bg-slate-600 cursor-pointer') 
+      : 'bg-slate-200 dark:bg-slate-800 cursor-not-allowed opacity-50' // Disabled holati
+  ]"
+>
+  <div :class="[
+    'w-4 h-4 bg-white rounded-full absolute top-1 transition-all duration-300 shadow-sm', 
+    isServiceActive ? 'left-6' : 'left-1'
+  ]"></div>
+</div>
             </div>
 
             <div class="bg-slate-50 dark:bg-slate-800/40 rounded-[28px] p-3 border border-slate-100 dark:border-white/5 flex items-center gap-3">
@@ -93,13 +114,130 @@
               {{ type === 'table' ? 'Stolga' : 'Olib ketish' }}
             </button>
           </div>
-
           <div class="grid grid-cols-1 gap-4">
             <div v-if="orderType === 'table'" class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-              <Select v-model="selectedTable" size="small" label="Stol Tanlang" :options="tabels" labelKey="number" valueKey="_id" searchable placeholder="Stol raqami..." />
-              <Select v-model="selectedCustomer" size="small" label="Mijoz (Ixtiyoriy)" :options="customerList" labelKey="name" valueKey="id" searchable placeholder="Mijoz ismi..." />
+<Select 
+  v-model="selectedTable" 
+  size="small" 
+  label="Stol Tanlang" 
+  :options="tabels" 
+  labelKey="number" 
+  valueKey="_id" 
+  searchable 
+  placeholder="Stol raqami..."
+>
+  <template #option="{ option }">
+    <div class="flex items-center justify-between w-full">
+      <div class="flex items-center gap-3">
+        <div 
+          :class="[
+            'w-10 h-10 rounded-xl flex flex-col items-center justify-center border-2 transition-all',
+            option.status === '0' 
+              ? 'border-emerald-500/20 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10' 
+              : 'border-rose-500/20 bg-rose-50 text-rose-600 dark:bg-rose-500/10'
+          ]"
+        >
+          <span class="text-[10px] uppercase font-black leading-none">№</span>
+          <span class="text-sm font-black">{{ option.number }}</span>
+        </div>
+
+        <div class="flex flex-col">
+          <span class="text-sm font-bold text-slate-700 dark:text-slate-200">
+            {{ option.position }}
+          </span>
+          <span class="text-[10px] text-slate-400 font-medium">
+            <i class="fa-solid fa-users mr-1"></i> {{ option.capacity || 4 }}
+          </span>
+        </div>
+      </div>
+
+      <div class="flex flex-col items-end gap-1">
+        <span 
+          :class="[
+            'px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border',
+            option.status === '0'
+              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' 
+              : 'bg-rose-500/10 border-rose-500/20 text-rose-600'
+          ]"
+        >
+          {{ option.status === '0' ? 'Bo\'sh' : 'Band' }}
+        </span>
+       
+      </div>
+    </div>
+  </template>
+</Select>
+            <Select 
+  v-model="selectedCustomer" 
+  :options="customers" 
+  label="Mijozni tanlang"
+  labelKey="name" 
+  valueKey="_id"
+  searchable
+  clearable
+  size="small" 
+
+>
+  <template #option="{ option }">
+    <div class="flex items-center justify-between w-full ">
+      <div class="flex flex-col">
+        <span class="text-sm font-bold text-slate-700 dark:text-slate-200">
+          {{ option.name }}
+        </span>
+        <span class="text-[10px] text-slate-400">tel: {{ option.phone }}</span>
+      </div>
+
+      <div class="text-right">
+        <p :class="option.balance < 0 ? 'text-rose-500' : 'text-emerald-500'" class="text-[12px] font-black">
+          {{ new Intl.NumberFormat('uz-UZ').format(option.balance) }}
+          <span class="text-[9px] opacity-70">UZS</span>
+        </p>
+        <p class="text-[9px] text-slate-400 uppercase tracking-tighter">Balans</p>
+      </div>
+    </div>
+  </template>
+</Select>
             </div>
-            <Select v-model="selectedStaff" size="small" label="Mas'ul Ofitsiant" :options="staffList" labelKey="name" valueKey="id" searchable placeholder="Ofitsiantni tanlang..." />
+          <Select 
+  v-model="selectedStaff" 
+  size="small" 
+  label="Mas'ul Ofitsiant" 
+  :options="employees" 
+  labelKey="firstname" 
+  valueKey="_id" 
+  searchable 
+  placeholder="Ofitsiantni tanlang..."
+  clearable
+>
+  <template #option="{ option }">
+    <div class="flex items-center justify-between w-full">
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <img 
+            :src="option.image || 'https://ui-avatars.com/api/?name=' + option.firstname" 
+            class="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 object-cover"
+          />
+          <span v-if="option.isOnline" class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></span>
+        </div>
+
+        <div class="flex flex-col">
+          <span class="text-sm font-bold text-slate-800 dark:text-slate-100">
+            {{ option.firstname }} {{ option.lastname }}
+          </span>
+          <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+            {{ option.position || option.role }}
+          </span>
+        </div>
+      </div>
+
+      <div v-if="option.phone" class="text-right">
+        <span class="text-[10px] font-black text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded-md">
+          #{{ option.phone.slice(-4) }}
+        </span>
+      </div>
+    </div>
+  </template>
+</Select>
             <TextArea v-model="orderComment" placeholder="Izohlar bo'lsa kiriting..." label="Buyurtma uchun izoh..." />
           </div>
         </div>
@@ -134,13 +272,16 @@
 import { ref, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
-import { MenuStore, TabelStore } from "../../stores/index.store";
+import { MenuStore, TabelStore,EmployeeStore,CustomerStore,FeeStore } from "../../stores/index.store";
 import { Select, Button, Modal, TextArea } from "../../UI/UI";
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const store_menu = MenuStore();
 const store_tabel = TabelStore();
+const store_employee = EmployeeStore();
+const store_customer = CustomerStore();
+const store_fee = FeeStore();
 
 const {
   cartItems, isCartOpen, totalItemsCount, currentSubtotal, calculateServiceFee,
@@ -148,22 +289,19 @@ const {
   discountPercent, orderType, selectedTable, selectedStaff, orderComment,
   selectedCustomer, loading, model
 } = storeToRefs(store_menu);
-
+console.log(selectedCustomer)
 const { tabels } = storeToRefs(store_tabel);
+const {employees } = storeToRefs(store_employee);
+const { customers } = storeToRefs(store_customer);
+const { model: feeModel } = storeToRefs(store_fee);
 const activeTab = ref("items");
 
-// API orqali kelishi kerak bo'lgan ma'lumotlar
-const staffList = ref([
-  { id: 1, name: "Umid Shomurodov" },
-  { id: 2, name: "Sardor Ali" },
-]);
-const customerList = ref([
-  { id: 1, name: "Mijoz #1" },
-  { id: 2, name: "Mijoz #2" },
-]);
 
 onMounted(async () => {
   await store_tabel.GetAll();
+  await store_employee.GetAll();
+  await store_customer.GetAll();
+  await store_fee.GetFee();
 });
 
 const handleUpdateQty = async (id, change) => {
