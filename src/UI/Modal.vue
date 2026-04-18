@@ -129,8 +129,8 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
           transform: `translate(${position.x}px, ${position.y}px)`,
           width: size.width,
           height: size.height,
-          maxWidth: '98vw',
-          maxHeight: '96vh',
+          maxWidth: '100vw',
+          maxHeight: '100vh',
           zIndex: '999999 !important' 
         }"
       >

@@ -3,6 +3,8 @@ export { MenuStore } from './Menu/menu.store';
 export { OrderStore } from './Order/order.store';
 export { TabelStore } from './Tabel/tabel.store';
 export { EmployeeStore } from './HR/employee.store';
+export { DepartmentStore } from './HR/department.store';
+export { CategoryStore } from './Menu/category.store';
 
 export { AuthStore } from './Auth/login.store';
 export { UserStore } from './Setting/user/user.store';

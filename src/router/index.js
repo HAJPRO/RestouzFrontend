@@ -40,6 +40,8 @@ const routes = [
       { path: 'settings/permissions', name: 'settingspermissions', component: () => import('../pages/explore/Settings/permission/index.vue') },
       { path: 'settings/service/fee', name: 'fee', component: () => import('../pages/explore/Settings/service/index.vue') },
       { path: 'customer', name: 'customer', component: () => import('../pages/explore/Customer/index.vue') },
+      { path: 'department', name: 'department', component: () => import('../pages/explore/HR/Department/index.vue') },
+      { path: 'category', name: 'category', component: () => import('../pages/explore/Menu/Category/index.vue') },
 
     ],
     meta: { requiresAuth: true }
