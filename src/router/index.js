@@ -39,6 +39,8 @@ const routes = [
       { path: 'settings/roles', name: 'settingsroles', component: () => import('../pages/explore/Settings/role/index.vue') },
       { path: 'settings/permissions', name: 'settingspermissions', component: () => import('../pages/explore/Settings/permission/index.vue') },
       { path: 'settings/service/fee', name: 'fee', component: () => import('../pages/explore/Settings/service/index.vue') },
+      { path: 'customer', name: 'customer', component: () => import('../pages/explore/Customer/index.vue') },
+
     ],
     meta: { requiresAuth: true }
   },

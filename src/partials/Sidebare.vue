@@ -64,6 +64,22 @@
                 </div>
               </transition>
             </div>
+             <div class="space-y-1">
+              <button @click="toggleSection('custom')" 
+                class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
+                <ion-icon :icon="idCardOutline" class="text-xl opacity-70" />
+                <span class="flex-1 text-left text-sm font-bold">Mijozlar</span>
+                <ion-icon :icon="chevronDownOutline" :class="{ 'rotate-180': openSections.staff }" class="text-[10px] transition-transform" />
+              </button>
+              <transition name="expand">
+                <div v-if="openSections.custom" class="ml-4 pl-8 border-l-2 border-slate-100 dark:border-slate-800 space-y-1">
+                  <router-link v-for="sub in customerSubs" :key="sub.routeName" :to="{ name: sub.routeName }" @click="closeMenuOnly"
+                    class="flex items-center gap-3 py-2.5 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-all">
+                    <ion-icon :icon="sub.icon" class="text-[14px]" /> {{ sub.label }}
+                  </router-link>
+                </div>
+              </transition>
+            </div>
 
             <div class="space-y-1">
               <button @click="toggleSection('supply')" 
@@ -165,7 +181,13 @@ import {
   chevronBackOutline, archiveOutline, chevronDownOutline, peopleOutline,
   cartOutline, settingsOutline, ribbonOutline, shieldCheckmarkOutline,receiptOutline,
   cubeOutline, personOutline, swapVerticalOutline, printOutline,
-  cashOutline, layersOutline, briefcaseOutline
+  cashOutline, layersOutline, briefcaseOutline, 
+  personAddOutline, 
+  walletOutline,
+  idCardOutline,
+  contractOutline,
+  fingerPrintOutline,
+  happyOutline
 } from "ionicons/icons";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
@@ -174,7 +196,8 @@ const openSections = ref({
   supply: false,
   inventory: false,
   tmo: false,
-  settings: false
+  settings: false,
+  custom:false
 });
 
 const menuItems = [
@@ -194,7 +217,22 @@ const staffSubs = [
 const employeeSubs = [
   { label: "Xodimlar", routeName: "employee", icon: personOutline },
 ];
-
+const customerSubs = [
+  { 
+    label: "Mijozlar ro'yxati", 
+    routeName: "customer", 
+    icon: peopleOutline, 
+    roles: ['1000', '1001'] // Admin va Menejerlar uchun
+  },
+ 
+  { 
+    label: "Mijozlar qarzdorligi", 
+    routeName: "customer", 
+    icon: walletOutline,
+    roles: ['1000'] // Faqat moliya/admin uchun
+  },
+ 
+];
 const supplySubs = [
   { label: "Xaridlar", routeName: "home", icon: cartOutline },
   { label: "Yetkazib beruvchilar", routeName: "home", icon: peopleOutline },

@@ -8,4 +8,5 @@ export { default as UserService } from './Settings/users/user.service';
 export { default as RoleService } from './Settings/role/role.service';
 export { default as PermissionService } from './Settings/permission/permission.service';
 export { default as FeeService } from './Settings/service/fee.service';
+export { default as CustomerService } from './Customer/customer.service';
 
