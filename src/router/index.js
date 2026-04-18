@@ -38,6 +38,7 @@ const routes = [
       { path: 'settings/users', name: 'settingsusers', component: () => import('../pages/explore/Settings/users/index.vue') },
       { path: 'settings/roles', name: 'settingsroles', component: () => import('../pages/explore/Settings/role/index.vue') },
       { path: 'settings/permissions', name: 'settingspermissions', component: () => import('../pages/explore/Settings/permission/index.vue') },
+      { path: 'settings/service/fee', name: 'fee', component: () => import('../pages/explore/Settings/service/index.vue') },
     ],
     meta: { requiresAuth: true }
   },
@@ -53,7 +54,7 @@ const routes = [
 
 const router = createRouter({
   // MUHIM: Mobile APK uchun createWebHashHistory ishlatish shart!
-  history: createWebHashHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 });
 

@@ -163,7 +163,7 @@ import { IonMenu, IonContent, IonIcon, menuController, IonMenuToggle } from "@io
 import {
   restaurant, flame, trophy, trophyOutline, time, timeOutline, logOutOutline,
   chevronBackOutline, archiveOutline, chevronDownOutline, peopleOutline,
-  cartOutline, settingsOutline, ribbonOutline, shieldCheckmarkOutline,
+  cartOutline, settingsOutline, ribbonOutline, shieldCheckmarkOutline,receiptOutline,
   cubeOutline, personOutline, swapVerticalOutline, printOutline,
   cashOutline, layersOutline, briefcaseOutline
 } from "ionicons/icons";
@@ -188,6 +188,7 @@ const staffSubs = [
   { label: "Rollar", routeName: "settingsroles", icon: ribbonOutline, roles: ['1000'] },
   { label: "Ruxsatlar", routeName: "settingspermissions", icon: shieldCheckmarkOutline, roles: ['1000'] },
   { label: "Chek sozlamalari", routeName: "check", icon: printOutline },
+ { label: "Xizmat foizi (%)", routeName: "fee", icon: receiptOutline },
 ];
 
 const employeeSubs = [

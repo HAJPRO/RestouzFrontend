@@ -45,21 +45,26 @@
     <ion-content :fullscreen="true">
       <div class="max-w-full mx-auto px-5 pb-10 space-y-8">
         
-        <div class="relative group mt-2">
-          <div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[32px] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
-          <div class="relative bg-white dark:bg-slate-900 rounded-[30px] p-5 flex items-center gap-4 border border-slate-100 dark:border-white/5">
-            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-indigo-500/30">
-              U
-            </div>
-            <div class="flex-1">
-              <h2 class="text-lg font-black text-slate-900 dark:text-white leading-none">Umid Shomurodov</h2>
-              <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1.5">Full-stack Developer</p>
-            </div>
-            <button class="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 active:scale-90 transition-all">
-              <ion-icon :icon="chevronForwardOutline" class="text-lg" />
-            </button>
-          </div>
-        </div>
+       <div class="relative group mt-2">
+  <div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[32px] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+  
+  <div class="relative bg-white dark:bg-slate-900 rounded-[30px] p-5 flex items-center gap-4 border border-slate-100 dark:border-white/5">
+    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center overflow-hidden text-white text-2xl font-black shadow-lg shadow-indigo-500/30">
+      <img :src="user?.image" alt="Profile" class="w-full h-full object-cover">
+    </div>
+
+    <div class="flex-1">
+      <h2 class="text-lg font-black text-slate-900 dark:text-white leading-none">{{ user?.fullname }}</h2>
+      <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1.5">Full-stack Developer</p>
+    </div>
+
+    <button 
+      aria-label="View Profile"
+      class="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-indigo-500 active:scale-90 transition-all">
+      <ion-icon :icon="chevronForwardOutline" class="text-lg" />
+    </button>
+  </div>
+</div>
 
         <div v-for="(section, sIdx) in menuSections" :key="sIdx" class="space-y-3">
           <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{{ section.title }}</p>
@@ -113,7 +118,10 @@ import {
   addCircleOutline
   
 } from 'ionicons/icons';
-
+import { AuthStore } from "../../../stores/index.store";
+import { storeToRefs } from "pinia";
+const store_auth = AuthStore();
+const { user } = storeToRefs(store_auth);
 const menuSections = [
   {
     title: 'Profil va Xavfsizlik',
