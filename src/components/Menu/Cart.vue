@@ -9,7 +9,7 @@
       @close="isCartOpen = false"
     >
       <div class="space-y-4">
-        <div class="sticky mt-0 top-[-20px] z-[100] mb-6 p-1.5 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-[20px] flex gap-1 border border-white/40 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)] mx-2">
+        <div class=" mt-0 top-[-20px] z-[100] mb-6 p-1.5 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-[20px] flex gap-1 border border-white/40 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)] mx-2">
           <button
             v-for="tab in ['items', 'settings']"
             :key="tab"
