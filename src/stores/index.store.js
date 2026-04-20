@@ -12,3 +12,4 @@ export { RoleStore } from './Setting/role/role.store';
 export { PermissionStore } from './Setting/permission/permission.store';
 export { FeeStore } from './Setting/service/fee.store';
 export { CustomerStore } from './Customer/customer.store';
+export { ZoneStore } from './Zone/zone.store';

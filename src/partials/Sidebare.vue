@@ -147,7 +147,8 @@ import {
   cartOutline, settingsOutline, ribbonOutline, shieldCheckmarkOutline, receiptOutline,
   cubeOutline, personOutline, swapVerticalOutline, printOutline,
   cashOutline, layersOutline, briefcaseOutline, walletOutline, idCardOutline,
-  businessOutline, gridOutline
+  businessOutline, gridOutline,
+  locationOutline
 } from "ionicons/icons";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
@@ -155,7 +156,7 @@ const route = useRoute();
 
 // --- STATE ---
 const openSections = ref({
-  staff: false, supply: false, inventory: false, tmo: false, settings: false, custom: false, product: false
+  staff: false, supply: false, inventory: false, tmo: false, settings: false, custom: false, product: false,zone:false
 });
 
 // --- CONFIGS ---
@@ -178,6 +179,14 @@ const sidebarSections = {
     { label: "Mahsulotlar", routeName: "menu", icon: cubeOutline },
     { label: "Kategoriyalar", routeName: "category", icon: gridOutline }
   ]},
+ zone: { 
+  label: "Restaran tuzilmasi", 
+  icon: businessOutline, // Bino yoki struktura ramzi
+  subs: [
+    { label: "Hududlar", routeName: "zone", icon: locationOutline }, // Qatlamlar (1-etaj, 2-etaj)
+    { label: "Stollar", routeName: "tables", icon: gridOutline }    // Kataklar (Stollar joylashuvi)
+  ]
+},
   supply: { label: "Ta'minot", icon: briefcaseOutline, subs: [
     { label: "Xaridlar", routeName: "home", icon: cartOutline },
     { label: "Yetkazib beruvchilar", routeName: "home", icon: peopleOutline }

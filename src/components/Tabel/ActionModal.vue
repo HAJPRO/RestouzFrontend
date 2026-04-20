@@ -1,11 +1,13 @@
 <script setup>
-import { ref } from "vue";
+import { ref,onMounted } from "vue";
 import {  storeToRefs } from "pinia";
-import { TabelStore } from "../../stores/index.store";
+import { TabelStore,ZoneStore } from "../../stores/index.store";
 import { Button, Select, Modal, Input,TextArea } from "../../UI/UI";
 
 const store_tabel = TabelStore();
+const store_zone = ZoneStore();
 const { isModal,model,modalAction } = storeToRefs(store_tabel);
+const { zones } = storeToRefs(store_zone);
 
 // Statik optionlar (Select uchun)
 const roomOptions = [
@@ -47,6 +49,10 @@ const Save = async () => {
   } finally {
   }
 };
+onMounted(async ()=>{
+  await store_zone.GetAll()
+}
+)
 </script>
 
 <template>
@@ -100,19 +106,44 @@ const Save = async () => {
         </div>
       </div>
 
-      <div class="flex flex-col gap-1.5">
-        <Select 
-       :ref="el => formRefs[2] = el"
-       clearable
-        v-model="model.position"
-        label="Joylashgan joyi (Zal)"
-          :options="roomOptions" 
-          placeholder="Joylashuvni tanlang..."
-          class="w-full"
-          required
-    :rules="[v => !!v || 'Iltimos, stolni joylashuvini tanlang']"
-        />
+    <div class="col-span-12">
+  <Select 
+    :ref="el => formRefs.zoneId = el"
+    v-model="model.zoneId"
+    label="Joylashgan hudud (Zal)"
+    :options="zones" 
+    placeholder="Joylashuvni tanlang..."
+    class="w-full"
+    required
+    labelKey="name"
+    valueKey="_id"
+    :rules="[v => !!v || 'Iltimos, hududni tanlang']"
+    searchable
+    clearable
+  >
+    <template #option="{ option }">
+      <div class="flex items-center justify-between w-full py-1">
+        <div class="flex flex-col">
+          <span class="font-bold text-slate-800 dark:text-slate-200">
+            {{ option.name }}
+          </span>
+          <span class="text-[10px] text-slate-400 uppercase tracking-tighter">
+            Kod: {{ option.code || 'N/A' }}
+          </span>
+        </div>
+        
+        <div class="flex flex-col items-end">
+          <span class="text-[11px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded-md">
+            {{ option.tableCount || 0 }} stol
+          </span>
+          <span v-if="option.status === 'inactive'" class="text-[9px] text-rose-500 font-bold uppercase mt-1">
+            Yopiq
+          </span>
+        </div>
       </div>
+    </template>
+  </Select>
+</div>
 
       <div class="flex flex-col gap-1.5">
         <!-- <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Dastlabki holati</label> -->
