@@ -13,7 +13,10 @@ export const TabelStore = defineStore('TabelStore', {
     tabels: [], // Ma'lumotlarni saqlash uchun
     loading: false,
 
-    selectedTableNumber : ""
+    selectedTableNumber : "",
+    model_payment:{},
+    activeTable : {},
+    isPaymentModal:false
   }),
 
   actions: {
@@ -74,8 +77,48 @@ export const TabelStore = defineStore('TabelStore', {
         this.loading = false;
       }
     },
+//Payment Modal
+  PaymentModalAction(table) {
+    this.activeTable = table;
+    const cart = table.cartId;
 
+    // Modelni obyekt strukturasiga moslab tozalaymiz
+    this.model_payment = {
+      cash: 0,
+      card: 0,
+      terminal: 0,
+      debt: 0,
+      note: '',
+      // Backend uchun qo'shimcha ma'lumotlar
+      tableId: table._id,
+      cartId: cart?._id,
+      customerId: cart?.customerId?._id || null,
+      totalAmount: cart?.finalTotal || 0
+    };
 
+    this.isPaymentModal = true;
+  },
+
+  async SubmitPayment() {
+    try {
+      // Backend kutilayotgan formatda payload yuboramiz
+      const payload = {
+        ...this.model_payment,
+        paidAt: new Date(),
+      };
+
+      const res = await axios.post('/api/orders/pay', payload);
+      
+      // Muvaffaqiyatli bo'lsa, stolni stateda tozalaymiz
+      if (res.data.success) {
+        this.isPaymentModal = false;
+        // Stollar ro'yxatini qayta yuklash yoki local o'zgartirish
+        await this.fetchTables(); 
+      }
+    } catch (err) {
+      console.error("To'lov xatosi:", err);
+    }
+  },
     // / Booking Modal uchun action
      async BookingModalAction(tabel) {
       this.bookingModel = tabel

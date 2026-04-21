@@ -48,7 +48,7 @@
 
   <div class="flex justify-between items-center z-10 w-full">
     <span class="text-[9px] font-black opacity-40 uppercase tracking-[1.5px] leading-none">
-      {{ table.position || 'Asosiy Zal' }}
+      {{ table.zoneId ?  table.zoneId.name : `No'malum zona` }}
     </span>
     
     <div class="flex items-center gap-2">
@@ -312,10 +312,17 @@ const handleTableClick = async (table) => {
 };
 
 const getTableActions = (table) => [
-  { label: 'Tahrirlash', icon: 'fa-solid fa-pen-to-square', onClick: () => store.ModalAction({id:table._id,action:'edit'}) },
-  { label: 'Hisob berish', icon: 'fa-solid fa-calculator', onClick: () => store.Create({_id:table._id,status:'3'}, 'edit') },
+  { label: 'Tahrirlash', icon: 'fa-solid fa-pen-to-square', onClick: () => store.ModalAction({id:table._id, action:'edit'}) },
+  { label: 'Hisob berish', icon: 'fa-solid fa-calculator', onClick: () => store.PaymentModalAction(table)},
   { label: 'Bron qo\'shish', icon: 'fa-solid fa-calendar-plus', onClick: () => store.BookingModalAction(table, 'booked') },
-  { label: 'Bo\'shatish', icon: 'fa-solid fa-rotate-left', variant: 'warning', onClick: () => store.Create({_id:table._id,status:'0', cartId: null}, 'edit') }
+  { label: 'Bo\'shatish', icon: 'fa-solid fa-rotate-left', variant: 'warning', onClick: () => store.Create({_id:table._id, status:'0', cartId: null}, 'edit') },
+  // --- Yangi qo'shilgan maydonlar ---
+  { label: 'Chek berish', icon: 'fa-solid fa-print', onClick: () => store.PrintCheck(table._id) }, // Chek chiqarish funksiyasi
+  { label: 'Bekor qilish', icon: 'fa-solid fa-ban', variant: 'danger', onClick: () => store.Create({_id:table._id, status:'4', cartId: null}, 'edit') }, // Status '4' odatda bekor qilingan deb olinadi
+  { label: 'O\'chirish', icon: 'fa-solid fa-trash-can', variant: 'danger', onClick: () => store.DeleteAction(table._id) }, // O'chirish amali
+  // ---------------------------------
+
+  
 ];
 
 const filteredTables = computed(() => {
