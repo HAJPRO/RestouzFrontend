@@ -62,7 +62,6 @@ const onSave = async () => {
     v-model="isModal"
     :title="modalAction.action === 'edit' ? 'Kategoriyani tahrirlash' : 'Kategoriya qo\'shish'"
     :icon="modalAction.action === 'edit' ? 'fa-solid fa-layer-group' : 'fa-solid fa-folder-plus'"
-    width="550px"
   >
     <div class="grid grid-cols-12 gap-x-5 gap-y-4 py-4 px-2">
       

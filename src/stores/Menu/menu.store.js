@@ -1,8 +1,7 @@
 import { defineStore } from "pinia";
 import { useToast } from "../../UI/utils/useToast";
- const { toast } = useToast();
 import { MenuService } from "../../ApiService/index.service";
-import { TabelStore,FeeStore } from "../../stores/index.store";
+import { TabelStore, FeeStore } from "../../stores/index.store";
 
 export const MenuStore = defineStore('MenuStore', {
   state: () => ({
@@ -25,13 +24,13 @@ export const MenuStore = defineStore('MenuStore', {
 
     // Hisob-kitob sozlamalari
     isServiceActive: true,
-    serviceFeePercent: 10, // Odatda 10%
+    serviceFeePercent: 0, 
     discountPercent: 0, 
     
     // Tanlovlar
     selectedTable: null,
     selectedStaff: null,
-    selectedCustomer:null,
+    selectedCustomer: null,
     orderType: 'table',
     orderComment: '',
   }),
@@ -40,12 +39,10 @@ export const MenuStore = defineStore('MenuStore', {
     totalItemsCount: (state) => state.cartItems.reduce((sum, item) => sum + item.quantity, 0),
     currentSubtotal: (state) => state.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
     
-    // Service Fee hisoblash
+    // Xizmat haqini hisoblash (Dinamik ravishda FeeStore'dan oladi)
     calculateServiceFee: (state) => {
-      const feeStore = FeeStore(); // Getter ichida store-ni chaqiramiz
-      
-      // Foizni FeeStore-dan olamiz (masalan feeStore.model.percentage)
-      const percentage = feeStore.model?.status === 'active'? feeStore.model?.percentage : 0; 
+      const feeStore = FeeStore();
+      const percentage = feeStore.model?.status === 'active' ? feeStore.model?.percentage : 0; 
 
       if (state.isServiceActive) {
         return (state.currentSubtotal * percentage) / 100;
@@ -87,19 +84,21 @@ export const MenuStore = defineStore('MenuStore', {
     CardModalAction() {
       this.isCartOpen = !this.isCartOpen;
     },
-async Create(payload) {
-  try {
-    if(payload.action ==='create'){
-    const  data = await MenuService.Create(payload)
-    toast.success(data.msg)
-    }
-  } catch (error) {
-    
-  }
-  finally{
-    this.GetAll()
-  }
-},
+
+    async Create(payload) {
+      const { toast } = useToast();
+      try {
+        if(payload.action === 'create'){
+          const data = await MenuService.Create(payload);
+          toast.success(data.msg);
+        }
+      } catch (error) {
+        toast.error("Xatolik yuz berdi");
+      } finally {
+        this.GetAll();
+      }
+    },
+
     // --- CATEGORY ACTIONS ---
     async openCategoryForm(payload = null) {
       if (payload && (payload.id || payload._id)) {
@@ -190,6 +189,7 @@ async Create(payload) {
       this.orderComment = '';
       this.selectedTable = null;
       this.selectedStaff = null;
+      this.selectedCustomer = null;
       this.isServiceActive = true;
     },
 
@@ -207,66 +207,63 @@ async Create(payload) {
       }
     },
 
-  async CreateOrder() {
-  const storeTabel = TabelStore();
-  const { toast } = useToast();
-  this.loading = true;
+    async CreateOrder() {
+      const storeTabel = TabelStore();
+      const feeStore = FeeStore();
+      const { toast } = useToast();
+      this.loading = true;
 
-  try {
-    const orderData = {
-      orderType: this.orderType,
-      items: this.cartItems.map(item => ({
-        foodId: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        totalPrice: item.price * item.quantity
-      })),
+      try {
+        // FeeStore'dan real foizni olish (Backend 10% muammosi yechimi)
+        const actualPercentage = feeStore.model?.status === 'active' ? feeStore.model?.percentage : 0;
 
-      // --- Moliyaviy blok (To'liq ma'lumotlar) ---
-      subtotal: this.currentSubtotal,
-      
-      // Xizmat haqi detallari
-      isServiceActive: this.isServiceActive, // Holati (true/false)
-      serviceFeePercent: this.isServiceActive ? this.serviceFeePercent : 0, // Foizi
-      serviceFeeAmount: this.calculateServiceFee, // Summasi
-      
-      // Chegirma detallari
-      discountPercent: Number(this.discountPercent), // Foizi
-      discountAmount: this.calculateDiscountAmount, // Summasi
-      
-      finalTotal: this.finalTotal, // Yakuniy summa
+        const orderData = {
+          orderType: this.orderType,
+          items: this.cartItems.map(item => ({
+            foodId: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            totalPrice: item.price * item.quantity
+          })),
+          subtotal: this.currentSubtotal,
+          
+          isServiceActive: this.isServiceActive,
+          serviceFeePercent: this.isServiceActive ? actualPercentage : 0,
+          serviceFeeAmount: this.calculateServiceFee,
+          
+          discountPercent: Number(this.discountPercent),
+          discountAmount: this.calculateDiscountAmount,
+          finalTotal: this.finalTotal,
 
-      // --- Bog'liqliklar va status ---
-      comment: this.orderComment,
-      staffId: this.selectedStaff?._id || this.selectedStaff,
-      customerId: this.selectedCustomer?._id || this.selectedCustomer,
-      status: 'pending'
-    };
+          comment: this.orderComment,
+          staffId: this.selectedStaff?._id || this.selectedStaff,
+          customerId: this.selectedCustomer?._id || this.selectedCustomer,
+          status: 'pending'
+        };
 
-    if (this.orderType === 'table') {
-      orderData.tableId = this.selectedTable?._id || this.selectedTable;
-    }
+        if (this.orderType === 'table') {
+          orderData.tableId = this.selectedTable?._id || this.selectedTable;
+        }
 
-    // API so'rovi
-    if (this.model._id) {
-      await MenuService.UpdateOrder({id:this.model._id, orderData});
-      toast.success("Buyurtma yangilandi");
-    } else {
-      await MenuService.CreateOrder(orderData);
-      toast.success("Buyurtma muvaffaqiyatli saqlandi");
-    }
+        if (this.model._id) {
+          await MenuService.UpdateOrder({ id: this.model._id, orderData });
+          toast.success("Buyurtma yangilandi");
+        } else {
+          await MenuService.CreateOrder(orderData);
+          toast.success("Buyurtma muvaffaqiyatli saqlandi");
+        }
 
-    this.clearCart();
-    this.isCartOpen = false;
-    await this.GetAll(); 
-  } catch (error) {
-    toast.error(error.response?.data?.message || "Saqlashda xatolik yuz berdi");
-  } finally {
-    this.loading = false;
-    await storeTabel.GetAll(); // Stol holatini yangilash
-  }
-},
+        this.clearCart();
+        this.isCartOpen = false;
+        await this.GetAll(); 
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Saqlashda xatolik yuz berdi");
+      } finally {
+        this.loading = false;
+        await storeTabel.GetAll();
+      }
+    },
 
     async setEditOrder(orderData) {
       this.clearCart(); 
@@ -275,10 +272,9 @@ async Create(payload) {
       this.orderType = orderData.orderType;
       this.orderComment = orderData.comment || '';
       this.discountPercent = orderData.discountPercent || 0;
-      this.isServiceActive = orderData.isServiceActive
-      this.serviceFeePercent=orderData.serviceFeePercent
-      this.serviceFeeAmount = orderData.serviceFeeAmount
+      this.isServiceActive = orderData.isServiceActive;
       
+      // Savatchani to'ldirish
       this.cartItems = orderData.items.map(item => ({
         id: item.foodId?._id || item.foodId,
         name: item.name,
@@ -287,9 +283,11 @@ async Create(payload) {
         image: item.foodId?.image || null
       }));
 
-      this.selectedTable = orderData.tableId;
-      this.selectedStaff = orderData.staffId;
-      this.selectedCustomer = orderData.customerId;
+      // SELECT larda ko'rinishi uchun faqat ID'larni saqlaymiz
+      this.selectedTable = orderData.tableId?._id || orderData.tableId;
+      this.selectedStaff = orderData.staffId?._id || orderData.staffId;
+      this.selectedCustomer = orderData.customerId?._id || orderData.customerId;
+      
       this.isCartOpen = true;
     }
   }

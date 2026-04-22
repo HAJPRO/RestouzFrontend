@@ -3,9 +3,8 @@
 
     <Modal
       v-model="isCartOpen"
-      :title="model._id ? 'Buyurtmani Tahrirlash' : 'Savat'"
+      :title="model._id ? 'Tahrirlash' : 'Savat'"
       icon="fa-solid fa-cart-shopping"
-      width="650px"
       @close="isCartOpen = false"
     >
       <div class="space-y-4">
@@ -289,7 +288,6 @@ const {
   discountPercent, orderType, selectedTable, selectedStaff, orderComment,
   selectedCustomer, loading, model
 } = storeToRefs(store_menu);
-console.log(selectedCustomer)
 const { tabels } = storeToRefs(store_tabel);
 const {employees } = storeToRefs(store_employee);
 const { customers } = storeToRefs(store_customer);

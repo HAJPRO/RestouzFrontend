@@ -55,61 +55,108 @@ const onFinish = async () => {
   >
     <div class="bg-slate-100 dark:bg-slate-950 rounded-xl p-2  space-y-2">
       
-      <div class="flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 p-2 rounded-2xl border border-slate-100 dark:border-slate-800">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700 shadow-sm">
-            <i class="fa-solid fa-bell-concierge text-sm text-slate-500"></i>
-          </div>
-          <div>
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Ofitsiant</p>
-            <p class="text-[13px] font-bold text-slate-700 dark:text-slate-200">
-              {{ cart?.staffId?.firstname || 'Tayinlanmagan' }}  {{ cart?.staffId?.lastname || 'Tayinlanmagan' }}
-            </p>
-          </div>
-        </div>
-
-        <div v-if="cart?.customerId || model_payment.customerId" class="flex items-center gap-3 text-right">
-          <div class="flex flex-col items-end">
-            <p class="text-[9px] font-black text-indigo-500 uppercase tracking-widest leading-none mb-1">Mijoz</p>
-            <p class="text-[13px] font-bold text-slate-800 dark:text-white truncate max-w-[120px]">
-              {{ cart?.customerId?.name || 'Doimiy mijoz' }}
-            </p>
-            <div class="mt-1 flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-100 dark:border-slate-700 shadow-sm font-mono">
-              <span :class="[(cart?.customerId?.balance < 0) ? 'text-rose-500' : 'text-emerald-500', 'text-[10px] font-black']">
-                {{ formatPrice(cart?.customerId?.balance || 0) }}
-              </span>
-            </div>
-          </div>
-          <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-md">
-            <i class="fa-solid fa-user text-white text-sm"></i>
-          </div>
-        </div>
+     <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-50/80 dark:bg-slate-900/50 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm">
+  
+  <div class="flex items-center gap-2.5 p-2 bg-white dark:bg-slate-800/40 rounded-[20px] border border-white dark:border-white/5 shadow-sm">
+    <div class="relative shrink-0">
+      <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center border border-indigo-100/50 dark:border-indigo-500/20">
+        <i class="fa-solid fa-bell-concierge text-[13px] text-indigo-500"></i>
       </div>
+      <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></div>
+    </div>
+    
+    <div class="flex flex-col min-w-0">
+      <span class="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none mb-1">Xizmat</span>
+      <p class="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate leading-tight">
+        {{ cart?.staffId?.firstname || 'Tayinlanmagan' }}
+      </p>
+    </div>
+  </div>
 
-      <div class="grid grid-cols-3 gap-6 py-2 px-2 border-b border-slate-50 dark:border-slate-900 pb-6">
-        <div>
-          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Taomlar</p>
-          <p class="text-sm font-bold text-slate-700 dark:text-slate-300 font-mono">{{ formatPrice(cart.subtotal) }}</p>
-        </div>
-        <div class="flex flex-col items-center border-x border-slate-100 dark:border-slate-800">
-          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Xizmat ({{ cart.serviceFeePercent }}%)</p>
-          <p class="text-sm font-bold text-indigo-500 font-mono">+{{ formatPrice(cart.serviceFeeAmount) }}</p>
-        </div>
-        <div class="flex flex-col items-end">
-          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Chegirma</p>
-          <p class="text-sm font-bold text-rose-500 font-mono">-{{ formatPrice(cart.discountAmount || 0) }}</p>
-        </div>
+  <div v-if="cart?.customerId || model_payment.customerId" 
+       class="flex items-center justify-between p-2 bg-white dark:bg-slate-800/40 rounded-[20px] border border-white dark:border-white/5 shadow-sm">
+    
+    <div class="flex flex-col min-w-0">
+      <span class="text-[8px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-wider leading-none mb-0.5">Mijoz</span>
+      <p class="text-[11px] font-bold text-slate-800 dark:text-white truncate leading-tight mb-1">
+        {{ cart?.customerId?.name || 'Doimiy mijoz' }}
+      </p>
+      
+      <div class="flex items-center">
+        <span :class="[
+          'px-1.5 py-0.5 rounded-md text-[9px] font-black font-mono',
+          (cart?.customerId?.balance < 0) 
+            ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' 
+            : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
+        ]">
+          {{ formatPrice(cart?.customerId?.balance || 0) }}
+        </span>
       </div>
+    </div>
 
-      <div class="bg-slate-900 dark:bg-indigo-600 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-        <i class="fa-solid fa-receipt absolute -right-4 -bottom-4 text-white/10 text-8xl rotate-12"></i>
-        <div class="relative z-10">
-          <p class="text-[10px] font-black text-white/60 uppercase tracking-[3px] mb-2">Jami To'lov</p>
-          <h2 class="text-4xl font-black text-white font-mono tracking-tighter">
-            {{ formatPrice(grandTotal) }}
-          </h2>
-        </div>
+    <div class="shrink-0 ml-2">
+      <div class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center border border-white dark:border-white/5 shadow-inner">
+        <i class="fa-solid fa-user text-[13px] text-slate-500 dark:text-slate-400"></i>
       </div>
+    </div>
+  </div>
+</div>
+    <div class="grid grid-cols-3 gap-2 py-4 px-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-slate-100 dark:border-white/5 shadow-sm">
+  <div class="flex flex-col gap-0.5">
+    <span class="text-[8px] font-black text-slate-400 uppercase tracking-[0.1em]">Taomlar</span>
+    <div class="flex items-baseline gap-0.5">
+      <span class="text-xs font-black text-slate-800 dark:text-slate-200 tracking-tighter">
+        {{ formatPrice(cart.subtotal).split(' ')[0] }}
+      </span>
+      <span class="text-[8px] font-bold text-slate-400 uppercase">uzs</span>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-0.5 items-center border-x border-slate-200/60 dark:border-white/10">
+    <span class="text-[8px] font-black text-slate-400 uppercase tracking-[0.1em]">
+      Xizmat <span class="text-indigo-500">{{ cart.serviceFeePercent }}%</span>
+    </span>
+    <div class="flex items-baseline gap-0.5">
+      <span class="text-xs font-black text-indigo-600 dark:text-indigo-400 tracking-tighter">
+        +{{ formatPrice(cart.serviceFeeAmount).split(' ')[0] }}
+      </span>
+      <span class="text-[8px] font-bold text-indigo-400/80 uppercase">uzs</span>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-0.5 items-end">
+    <span class="text-[8px] font-black text-slate-400 uppercase tracking-[0.1em]">
+      Chegirma <span class="text-rose-500">{{ cart.discountPercent || 0 }}%</span>
+    </span>
+    <div class="flex items-baseline gap-0.5">
+      <span class="text-xs font-black text-rose-600 dark:text-rose-400 tracking-tighter">
+        -{{ formatPrice(cart.discountAmount || 0).split(' ')[0] }}
+      </span>
+      <span class="text-[8px] font-bold text-rose-400/80 uppercase">uzs</span>
+    </div>
+  </div>
+</div>
+
+    <div class="relative overflow-hidden bg-indigo-600 dark:bg-indigo-500 rounded-[32px] p-5 shadow-[0_20px_50px_rgba(79,70,229,0.3)] group">
+  <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-700"></div>
+  <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-indigo-400/20 rounded-full blur-3xl"></div>
+  
+  <i class="fa-solid fa- receipt absolute right-4 bottom-4 text-white/10 text-6xl rotate-12 group-hover:rotate-0 transition-transform duration-500"></i>
+
+  <div class="relative z-10 flex flex-col gap-1">
+    <div class="flex items-center gap-2">
+      <div class="w-1.5 h-1.5 bg-indigo-200 rounded-full animate-pulse"></div>
+      <p class="text-[10px] font-black text-indigo-100/80 uppercase tracking-[0.2em]">Jami hisob</p>
+    </div>
+    
+    <div class="flex items-baseline gap-1.5">
+      <h2 class="text-4xl font-black text-white tracking-tighter drop-shadow-sm">
+        {{ formatPrice(grandTotal).split(' ')[0] }}
+      </h2>
+      <span class="text-sm font-bold text-indigo-100 uppercase opacity-80 tracking-widest">sum</span>
+    </div>
+  </div>
+</div>
 
       <div class="space-y-6">
         <div class="flex p-1.5 bg-slate-100 dark:bg-slate-900/50 rounded-2xl shadow-inner border border-slate-200/50 dark:border-slate-800">
@@ -194,12 +241,12 @@ const onFinish = async () => {
   </div>
 
   <div class="flex flex-col gap-0.5">
-    <span class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px] leading-none">
+    <span class="text-[8px] font-black text-slate-400 dark:text-slate-500  tracking-[2px] leading-none">
      Qoldiq
     </span>
     
     <div class="flex items-baseline gap-1.5">
-      <span class="text-lg font-black tracking-tighter transition-colors duration-500" 
+      <span class="text-sm font-black tracking-tighter transition-colors duration-500" 
             :class="remaining <= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'">
         {{ remaining <= 0 ? '0' : formatPrice(remaining) }}
       </span>

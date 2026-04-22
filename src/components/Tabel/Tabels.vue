@@ -37,7 +37,6 @@
        <div 
   v-for="table in filteredTables" 
   :key="table._id"
-  @click="handleTableClick(table)"
   :class="[
     'group relative flex flex-col justify-between p-5 min-h-[240px] rounded-[35px] transition-all duration-500 cursor-pointer active:scale-95 overflow-hidden border-2',
     getStatusTheme(table).bgClass,
@@ -127,9 +126,16 @@
     </div>
   </div>
 
-  <div v-else :class="['w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm', getStatusTheme(table).iconBox]">
-    <ion-icon :icon="getStatusIcon(table.status)" class="text-xl" />
-  </div>
+<button 
+  @click.stop="getStatusConfig(table).action()"
+  class="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center active:scale-90 transition-transform"
+>
+  <ion-icon 
+    :icon="getStatusConfig(table).icon" 
+    :class="getStatusConfig(table).color"
+    class="text-lg"
+  />
+</button>
 </div>
 
 <div v-if="table.status === '2' && !table.cartId" class="flex items-center justify-between w-full pt-2 border-t border-indigo-500/5">
@@ -164,7 +170,15 @@
       </div>
     </div>
 
-    <div :class="['w-2 h-2 rounded-full shadow-sm', getStatusTheme(table).dot]"></div>
+    <button 
+  @click="store.PaymentModalAction(table)"
+  class="relative flex items-center justify-center w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-100 dark:border-white/5 shadow-sm active:scale-90 transition-all duration-200 group"
+>
+ 
+  <i class="fa-solid fa-file-invoice-dollar text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 transition-colors text-md"></i>
+  
+  <div class="absolute inset-0 bg-slate-100 dark:bg-white/5 opacity-0 group-active:opacity-100 rounded-2xl transition-opacity"></div>
+</button>
   </div>
 </div>
         </div>
@@ -292,23 +306,65 @@ const getStatusTheme = (table) => {
   return themes[table.status] || themes['0'];
 };
 
-const getStatusIcon = (s) => {
-  const icons = { '0': addOutline, '1': cartOutline, '2': bookmarkOutline, '3': walletOutline };
-  return icons[s] || addOutline;
+const getStatusConfig = (table) => {
+  const configs = {
+    '0': { 
+      icon: addOutline, 
+      label: 'Yangi',
+      color: 'text-green-500' 
+    },
+    '1': { 
+      icon: cartOutline, 
+      label: 'Savat',
+      color: 'text-red-500' 
+    },
+    '2': { 
+      icon: bookmarkOutline, 
+      label: 'Band',
+      color: 'text-red-500' 
+    },
+    '3': { 
+      icon: walletOutline, 
+      label: 'Hisob',
+      color: 'text-indigo-500' 
+    }
+  };
+  
+  // Status string yoki number bo'lishi ehtimolini hisobga olamiz
+  const current = configs[String(table.status)] || configs['0'];
+  
+  return {
+    ...current,
+    // Funksiyani shu yerda bog'laymiz
+    action: () => handleTableClick(table)
+  };
 };
 
 const handleTableClick = async (table) => {
+  // 1. Vibratsiya (Haptic feedback)
   await Haptics.impact({ style: ImpactStyle.Light });
+  
+  // 2. Mahalliy tanlangan stolni yangilash
   selectedTable.value = table;
 
-  if (table.status === '0'){
-    store_menu.selectedTable = table._id;
+  // Bo'sh stol (Status 0)
+  if (table.status === '0' || table.status === 0) {
+    store_menu.clearCart(); // Oldingi qoldiqlarni tozalash
+    store_menu.selectedTable = table; // Butun obyektni saqlash ma'qul (ID: table._id)
     router.push({ name: 'menu' });
   } 
+  // Band, Savat yoki Hisob holatidagi stol
   else {
-    store_menu.setEditOrder(table.cartId);
-    isCartOpen.value = true;
-  } 
+    // MUHIM: table.cartId ichida ma'lumot borligini tekshiramiz
+    if (table.cartId) {
+      await store_menu.setEditOrder(table.cartId);
+      isCartOpen.value = true;
+    } else {
+      // Agar status 0 dan farqli bo'lsa-yu, cartId bo'lmasa (xatolik holati)
+      console.error("Buyurtma ma'lumotlari topilmadi");
+      toast.error("Buyurtma topilmadi");
+    }
+  }
 };
 
 const getTableActions = (table) => [

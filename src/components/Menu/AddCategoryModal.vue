@@ -52,7 +52,6 @@ const SaveCategory = async () => {
     v-model="isCategoryEditModal"
     :title="categoryModalAction === 'edit' ? 'Kategoriyani tahrirlash' : 'Yangi kategoriya qo\'shish'"
     :icon="categoryModalAction === 'edit' ? 'fa-solid fa-pen-to-square' : 'fa-solid fa-folder-plus'"
-    width="450px"
   >
     <div class="space-y-5 pb-4 px-1 mt-3">
       
