@@ -142,26 +142,37 @@ const onFinish = async () => {
           </button>
         </div>
 
-        <div v-if="activeTab === 'mixed'" class="grid grid-cols-2 gap-4 fade-in">
-          <div v-for="f in [{k:'cash', l:'Naqd Pul', i:'fa-wallet'}, {k:'card', l:'Plastik Karta', i:'fa-credit-card'}, {k:'terminal', l:'Terminal', i:'fa-print'}, {k:'debt', l:'Nasiya', i:'fa-clock'}]" 
-               :key="f.k" 
-               class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-transparent focus-within:border-indigo-500/30 transition-all">
-            <div class="flex items-center gap-2 mb-1.5 text-slate-400">
-              <i class="fa-solid text-[9px]" :class="f.i"></i>
-              <label class="text-[9px] font-black uppercase tracking-widest">{{ f.l }}</label>
-            </div>
-            <Input 
-              v-model="model_payment[f.k]" 
-              type="number" 
-              size="small"
-              placeholder="0.00"
-              class="w-full bg-transparent border-none text-base font-mono font-bold text-slate-700 dark:text-slate-200 p-0" 
-              @focus="$event.target.select()" 
-              clearable
-              suffix="sum"
-            />
-          </div>
-        </div>
+  <div v-if="activeTab === 'mixed'" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 fade-in">
+  <div v-for="f in [
+    {k:'cash', l:'Naqd Pul', i:'fa-wallet'}, 
+    {k:'card', l:'Plastik Karta', i:'fa-credit-card'}, 
+    {k:'terminal', l:'Terminal', i:'fa-print'}, 
+    {k:'debt', l:'Nasiya', i:'fa-clock'}
+  ]" 
+    :key="f.k" 
+    class="relative p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 focus-within:border-indigo-500/50 focus-within:bg-white dark:focus-within:bg-slate-900 transition-all duration-200 shadow-sm"
+  >
+    <div class="flex items-center gap-2 mb-1 text-slate-500 dark:text-slate-400">
+      <i class="fa-solid text-[10px]" :class="f.i"></i>
+      <label class="text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
+        {{ f.l }}
+      </label>
+    </div>
+
+    <div class="relative flex items-center">
+      <Input 
+        v-model="model_payment[f.k]" 
+        type="number" 
+        size="small"
+        placeholder="0.00"
+        class="w-full bg-transparent border-none text-lg font-mono font-bold text-slate-800 dark:text-slate-100 p-0 shadow-none focus:ring-0" 
+        @focus="$event.target.select()" 
+        clearable
+        suffix="sum"
+      />
+    </div>
+  </div>
+</div>
 
        
       </div>
@@ -184,13 +195,13 @@ const onFinish = async () => {
 
   <div class="flex flex-col gap-0.5">
     <span class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px] leading-none">
-      To'lov holati
+     Qoldiq
     </span>
     
     <div class="flex items-baseline gap-1.5">
       <span class="text-lg font-black tracking-tighter transition-colors duration-500" 
             :class="remaining <= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'">
-        {{ remaining <= 0 ? 'Yopildi' : formatPrice(remaining) }}
+        {{ remaining <= 0 ? '0' : formatPrice(remaining) }}
       </span>
       
       <span v-if="remaining > 0" class="flex h-1.5 w-1.5 rounded-full bg-rose-500 animate-bounce"></span>
@@ -199,7 +210,7 @@ const onFinish = async () => {
 </div>
 
         <div class="flex items-center gap-3">
-          <Button size="sm" variant="danger" leftIcon="fas fa-xmark" @click="isPaymentModal = false" class="!rounded-xl !px-6">Yopish</Button>
+          <!-- <Button size="sm" variant="danger" leftIcon="fas fa-xmark" @click="isPaymentModal = false" class="!rounded-xl !px-6">Yopish</Button> -->
           <Button 
             size="sm"
             @click="onFinish"
