@@ -21,7 +21,10 @@ const TabelService = {
         GetTableBookings(id) {
         const url = `tabel/booking/get/${id}`;
         return api.get(url);
-        }
+        },
+
+        //cart service
+        
 
 };
 

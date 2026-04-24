@@ -3,8 +3,7 @@ import api from "../../helpers/api";
 const OrderService = {
     Create(payload) {
         const url = "order/create";
-        return api.post(url, payload,{
-    });
+        return api.post(url, payload);
     },
      GetAll(payload) {
         const url = "order/all";
@@ -13,6 +12,10 @@ const OrderService = {
         GetById(id) {
         const url = `order/get/${id}`;
         return api.get(url);
+        },
+        SubmitPayment(payload) {
+        const url = "order/payment";
+        return api.post(url, payload)
         },
 
      
