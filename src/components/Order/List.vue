@@ -45,17 +45,17 @@
             <div class="flex justify-between items-start mb-5 relative z-10">
               <div class="flex items-center gap-3">
                 <div :class="['w-12 h-12 rounded-2xl flex items-center justify-center text-lg', order.orderType === 'takeaway' ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600']">
-                  <i :class="order.orderType === 'takeaway' ? 'fas fa-box-archive' : 'fas fa-utensils'"></i>
+                  <i :class="order.orderType === 'takeaway' ? 'fas fa-bag-shopping animate-bounce' : 'fas fa-chair animate-bounce'"></i>
                 </div>
                 <div>
                   <div class="flex items-center gap-2">
-                    <h3 class="text-sm font-black dark:text-white uppercase tracking-tighter"> № : {{ order.tableId?.number || 'N/A' }}</h3>
+                    <h3 class="text-sm font-black dark:text-white uppercase tracking-tighter"> № : {{ order.tableId?.number? order.tableId?.number : "0" }}</h3>
                    
                   </div>
                   <p class="text-[10px] text-slate-400 font-bold uppercase mt-0.5">{{ formatDate(order.createdAt) }}</p>
                 </div>
               </div>
-              <div :class="[
+              <!-- <div :class="[
   'flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-wider border transition-all duration-300 shadow-sm',
   order.orderType === 'table' 
     ? 'bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20' 
@@ -80,10 +80,11 @@
       order.orderType === 'table' ? 'bg-indigo-500' : 'bg-rose-500'
     ]"></span>
   </span>
+</div> -->
+              <div :class="['status-badge', getStatusClass(order.status)]">
+  <i :class="getStatusIcon(order.status)"></i>
+  <span>{{ getStatusLabel(order.status) }}</span>
 </div>
-              <div :class="getStatusClass(order.status)">
-                {{ order.status }}
-              </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4 mb-5 border-b border-slate-50 dark:border-white/5 pb-4">
@@ -166,7 +167,7 @@
               </div>
               <div class="flex gap-2">
                 <Button @click="handlePrint(order)" icon="fas fa-print" variant="secondary" class="!rounded-2xl !w-12 !h-12 shadow-sm" />
-                <Button @click="handleDetail(order)" icon="fas fa-arrow-right" class="!rounded-2xl !px-6 !h-12 shadow-lg shadow-indigo-100" />
+                <Button v-if="order.status==='pending'"  @click="store_tabel.PaymentModalAction(order)" icon="fas fa-arrow-right" class="!rounded-2xl !px-6 !h-12 shadow-lg shadow-indigo-100" />
               </div>
             </div>
 
@@ -181,6 +182,7 @@
         <ion-infinite-scroll-content loading-spinner="crescent" loading-text="Yuklanmoqda..."></ion-infinite-scroll-content>
       </ion-infinite-scroll>
     </ion-content>
+    <PaymentModal />
 
     <Footer class="z-50" />
     
@@ -196,13 +198,15 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { IonPage, IonContent, IonInfiniteScroll, IonInfiniteScrollContent } from "@ionic/vue";
-import { OrderStore } from "../../stores/index.store";
+import { OrderStore,TabelStore } from "../../stores/index.store";
 import { storeToRefs } from "pinia";
 import { Button, Header, GlobalRefresher, EmptyState, LoadingState, DateRangePicker } from "../../UI/UI";
 import Footer from "../../partials/Footer.vue";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import PaymentModal from "../Tabel/PaymentModal.vue";
 
 const store_order = OrderStore();
+const store_tabel = TabelStore();
 const { orders, loading } = storeToRefs(store_order);
 
 const searchQuery = ref("");
@@ -244,15 +248,37 @@ const filteredOrders = computed(() => {
   return result;
 });
 
+const getStatusLabel = (status) => {
+  const labels = {
+    'pending': 'Kutilmoqda',
+    'active': 'Jarayonda',
+    'completed': 'Yakunlandi',
+    'cancelled': 'Bekor qilindi',
+    'debt': 'Qarz'
+  };
+  return labels[status] || status;
+};
+
+const getStatusIcon = (status) => {
+  const icons = {
+    'pending': 'fa-solid fa-clock-rotate-left',
+    'active': 'fa-solid fa-fire-dot',
+    'completed': 'fa-solid fa-check-double',
+    'cancelled': 'fa-solid fa-ban',
+    'debt': 'fa-solid fa-handshake-angle'
+  };
+  return icons[status] || 'fa-solid fa-circle-info';
+};
+
 const getStatusClass = (status) => {
-  const base = 'px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider border ';
-  switch (status) {
-    case 'pending': return base + 'bg-amber-100 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20';
-    case 'preparing': return base + 'bg-blue-100 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20';
-    case 'completed': return base + 'bg-emerald-100 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20';
-    case 'cancelled': return base + 'bg-rose-100 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20';
-    default: return base + 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-white/5';
-  }
+  const classes = {
+    'pending': 'status-pending',
+    'active': 'status-active',
+    'completed': 'status-completed',
+    'cancelled': 'status-cancelled',
+    'debt': 'status-debt'
+  };
+  return classes[status] || 'status-default';
 };
 
 const formatDate = (dateStr) => {
@@ -284,5 +310,29 @@ onMounted(() => {
 @keyframes slideUp {
   from { transform: translateY(30px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+/* Bu klasslar Tailwind class'lari sifatida ishlatilishi mumkin */
+.status-badge {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm;
+}
+
+.status-pending {
+  @apply bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200;
+}
+
+.status-active {
+  @apply bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200;
+}
+
+.status-completed {
+  @apply bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200;
+}
+
+.status-cancelled {
+  @apply bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 border border-rose-200;
+}
+
+.status-debt {
+  @apply bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200;
 }
 </style>

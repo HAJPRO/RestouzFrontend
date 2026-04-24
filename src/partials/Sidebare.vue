@@ -163,7 +163,7 @@ const openSections = ref({
 const menuItems = [
   { label: "Dashboard", routeName: "home", icon: flame, activeIcon: flame, badge: true },
   { label: "Reyting", routeName: "tables", icon: trophyOutline, activeIcon: trophy },
-  { label: "Tarix", routeName: "profile", icon: timeOutline, activeIcon: time },
+  { label: "Tranzaksiyalar", routeName: "transaction", icon: timeOutline, activeIcon: time },
 ];
 
 const sidebarSections = {

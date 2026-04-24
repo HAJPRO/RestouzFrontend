@@ -79,8 +79,10 @@ export const TabelStore = defineStore('TabelStore', {
     },
 //Payment Modal
   PaymentModalAction(table) {
-    this.activeTable = table;
-    const cart = table.cartId;
+    console.log(table.cartId);
+    
+    this.activeTable = table.tableId ? table.tableId : table ;
+    const cart = table.cartId  ? table.cartId : table;
 
     // Modelni obyekt strukturasiga moslab tozalaymiz
     this.model_payment = {
@@ -141,14 +143,11 @@ export const TabelStore = defineStore('TabelStore', {
   try {
     this.loading = true;
     const res = await OrderService.SubmitPayment(payload);
+    console.log(res);
     
     if (res.data.success) {
-      // Professional bildirishnoma
-      const msg = surplusAmount > 0 
-        ? `To'lov qabul qilindi. ${this.formatPrice(surplusAmount)} balansga o'tkazildi.` 
-        : "To'lov muvaffaqiyatli yakunlandi";
-      
-      toast.success(msg);
+     
+      toast.success(res.data.message);
       
       this.isPaymentModal = false;
       // model_payment'ni tozalash (keyingi safar eski ma'lumotlar chiqmasligi uchun)

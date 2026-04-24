@@ -6,6 +6,7 @@ import { Button, Modal, Input } from "../../UI/UI";
 
 const store_tabel = TabelStore();
 const { isPaymentModal, model_payment, activeTable } = storeToRefs(store_tabel);
+console.log(activeTable.value);
 
 const activeTab = ref('single'); 
 const selectedMethod = ref('cash');

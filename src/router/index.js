@@ -43,6 +43,7 @@ const routes = [
       { path: 'department', name: 'department', component: () => import('../pages/explore/HR/Department/index.vue') },
       { path: 'category', name: 'category', component: () => import('../pages/explore/Menu/Category/index.vue') },
       { path: 'zone', name: 'zone', component: () => import('../pages/explore/Zone/index.vue') },
+      { path: 'transaction', name: 'transaction', component: () => import('../pages/explore/Transaction/index.vue') },
 
     ],
     meta: { requiresAuth: true }

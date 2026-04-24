@@ -12,4 +12,5 @@ export { default as PermissionService } from './Settings/permission/permission.s
 export { default as FeeService } from './Settings/service/fee.service';
 export { default as CustomerService } from './Customer/customer.service';
 export { default as ZoneService } from './Zone/zone.service';
+export { default as TransactionService } from './Transaction/transaction.service';
 

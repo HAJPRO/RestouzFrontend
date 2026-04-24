@@ -114,7 +114,7 @@
             </button>
           </div>
           <div class="grid grid-cols-1 gap-4">
-            <div v-if="orderType === 'table'" class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+            <div v-if="orderType === 'table'" class="grid grid-cols-1 md:grid-cols-1 gap-4 animate-fade-in">
 <Select 
   v-model="selectedTable" 
   size="small" 
@@ -166,7 +166,9 @@
     </div>
   </template>
 </Select>
-            <Select 
+        
+            </div>
+                <Select 
   v-model="selectedCustomer" 
   :options="customers" 
   label="Mijozni tanlang"
@@ -196,7 +198,6 @@
     </div>
   </template>
 </Select>
-            </div>
           <Select 
   v-model="selectedStaff" 
   size="small" 
