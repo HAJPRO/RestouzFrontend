@@ -14,3 +14,4 @@ export { FeeStore } from './Setting/service/fee.store';
 export { CustomerStore } from './Customer/customer.store';
 export { ZoneStore } from './Zone/zone.store';
 export { TransactionStore } from './Transaction/transaction.store';
+export { StatisticsStore } from './Dashboard/Sale/statistics.store';

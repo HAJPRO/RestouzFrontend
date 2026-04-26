@@ -13,4 +13,5 @@ export { default as FeeService } from './Settings/service/fee.service';
 export { default as CustomerService } from './Customer/customer.service';
 export { default as ZoneService } from './Zone/zone.service';
 export { default as TransactionService } from './Transaction/transaction.service';
+export { default as StatisticsService } from './Dashboard/Sale/statistics.service';
 
